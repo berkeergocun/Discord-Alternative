@@ -1,8 +1,14 @@
 <script setup lang="ts">
-import { DropdownMenuTrigger, type DropdownMenuTriggerProps } from 'radix-vue'
+import { DropdownMenuTrigger } from 'radix-vue'
 import { cn } from '~/lib/utils'
 
-const props = withDefaults(defineProps<DropdownMenuTriggerProps & { class?: string }>(), {
+interface Props {
+  class?: string
+  as?: string | object
+  asChild?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
   as: 'button'
 })
 </script>
