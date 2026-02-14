@@ -49,6 +49,9 @@ interface Server {
   description?: string
   hasNotification?: boolean
   unreadCount?: number
+  boostLevel?: number
+  boostCount?: number
+  boostGoal?: number
 }
 
 interface Props {
