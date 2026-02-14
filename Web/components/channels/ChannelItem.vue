@@ -8,30 +8,35 @@
   >
     <!-- Channel Icon -->
     <div class="shrink-0 w-5 h-5 flex items-center justify-center">
-      <!-- Text Channel (Hashtag) -->
-      <svg v-if="channel.type === 'text'" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M5.88 4.12 13.76 12l-7.88 7.88L8 22l10-10L8 2zm13.76 0L11.76 12l7.88 7.88L18 22 8 12l10-10z" fill="none"/>
-        <path d="M10.5 3h-1L8 9H4v2h3.5l-.75 4H3v2h3.25L5 21h1l1.25-4H11l-1.25 4h1l1.25-4H16v-2h-4.25l.75-4H17V9h-4.75L13.5 3h-1l-1.25 6H7.5l1-6zm.25 8-.75 4H6.25l.75-4h3.75z"/>
+      <!-- Text Channel (Hashtag) - Simple clean style -->
+      <svg v-if="channel.type === 'text'" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" y1="9" x2="20" y2="9"/>
+        <line x1="4" y1="15" x2="20" y2="15"/>
+        <line x1="10" y1="3" x2="8" y2="21"/>
+        <line x1="16" y1="3" x2="14" y2="21"/>
       </svg>
       
-      <!-- Voice Channel (Speaker) -->
-      <svg v-else-if="channel.type === 'voice'" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M11.999 3.077c-4.08 0-7.385 3.306-7.385 7.385 0 4.08 3.305 7.385 7.385 7.385 4.08 0 7.385-3.305 7.385-7.385 0-4.079-3.305-7.385-7.385-7.385zm3.693 7.385c0 2.04-1.653 3.693-3.693 3.693s-3.693-1.653-3.693-3.693 1.653-3.693 3.693-3.693 3.693 1.653 3.693 3.693zM6.462 19.847c0-3.054 2.483-5.538 5.537-5.538 3.054 0 5.538 2.484 5.538 5.538h1.846c0-4.08-3.305-7.384-7.384-7.384-4.08 0-7.385 3.304-7.385 7.384h1.848z"/>
+      <!-- Voice Channel (Speaker) - Discord style -->
+      <svg v-else-if="channel.type === 'voice'" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 3C10.3431 3 9 4.34315 9 6V11C9 12.6569 10.3431 14 12 14C13.6569 14 15 12.6569 15 11V6C15 4.34315 13.6569 3 12 3Z"/>
+        <path d="M6.34315 10C6.34315 9.44772 5.89543 9 5.34315 9C4.79086 9 4.34315 9.44772 4.34315 10C4.34315 14.3 7.5 17.8 11.5 18.2V21H8C7.44772 21 7 21.4477 7 22C7 22.5523 7.44772 23 8 23H16C16.5523 23 17 22.5523 17 22C17 21.4477 16.5523 21 16 21H12.5V18.2C16.5 17.8 19.6569 14.3 19.6569 10C19.6569 9.44772 19.2091 9 18.6569 9C18.1046 9 17.6569 9.44772 17.6569 10C17.6569 13.5 15.5 16 12 16C8.5 16 6.34315 13.5 6.34315 10Z"/>
       </svg>
       
-      <!-- Announcement Channel (Megaphone) -->
-      <svg v-else-if="channel.type === 'announcement'" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M3.99 3.99v7.5c0 .83.67 1.5 1.5 1.5H7v5.51c0 .83.67 1.49 1.5 1.49h3c.83 0 1.5-.67 1.5-1.5v-5.5h1.51c.83 0 1.5-.67 1.5-1.5v-7.5c0-.83-.67-1.5-1.5-1.5h-9c-.84 0-1.51.67-1.51 1.5zm10.51 0c0 2.76 2.24 5 5 5v-5c-2.76 0-5-2.24-5-5h-2.5v5zm0 7.5h-2.5v5.5h2.5v-5.5z"/>
+      <!-- Announcement Channel (Megaphone) - Clean outline -->
+      <svg v-else-if="channel.type === 'announcement'" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M3 5V19L8 14L13 19V5L8 10L3 5Z"/>
+        <path d="M13 5V19L18 14V19C18 20.1 18.9 21 20 21C21.1 21 22 20.1 22 19V5C22 3.9 21.1 3 20 3C18.9 3 18 3.9 18 5V10L13 5Z"/>
       </svg>
       
-      <!-- Forum Channel (Chat Bubbles) -->
-      <svg v-else-if="channel.type === 'forum'" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+      <!-- Forum Channel (Messages) - Simple bubble stack -->
+      <svg v-else-if="channel.type === 'forum'" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20 2H4C2.9 2 2.01 2.9 2.01 4L2 22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM18 14H6V12H18V14ZM18 11H6V9H18V11ZM18 8H6V6H18V8Z"/>
       </svg>
       
-      <!-- Stage Channel (Podium) -->
-      <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+      <!-- Stage Channel (Broadcast) - Radio waves -->
+      <svg v-else class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="2"/>
+        <path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/>
       </svg>
     </div>
     
