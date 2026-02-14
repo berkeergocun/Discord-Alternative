@@ -6,7 +6,7 @@ export const useMockData = () => {
       icon: '',
       hasNotification: true,
       unreadCount: 5,
-      banner: '',
+      banner: '/assets/images/minecraft-banner.png',
       bannerColor: '#2B7A3D',
       description: 'Minecraft Türkiye\'nin en iyi survival sunucusu! 🎮',
       boostLevel: 2,
