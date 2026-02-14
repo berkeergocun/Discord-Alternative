@@ -33,6 +33,7 @@
         :categories="currentChannels"
         :activeChannelId="activeChannelId"
         @channel-select="handleChannelSelect"
+        @join-voice="handleJoinVoice"
       />
     </Sidebar>
     
@@ -439,6 +440,13 @@ const handleServerChange = (serverId: string) => {
 const handleChannelSelect = (channelId: string) => {
   // Let the watch handler update the state
   navigateTo(`/channels/${activeServerId.value}/${channelId}`)
+}
+
+const handleJoinVoice = (channelId: string) => {
+  // Voice channels don't open chat, just join the voice room
+  console.log('Joining voice channel:', channelId)
+  // TODO: Implement voice connection logic
+  // For now, do nothing to prevent chat from opening
 }
 
 const handleDmSelect = (dmId: string) => {

@@ -201,9 +201,9 @@ export const useMockData = () => {
         id: 'cat2',
         name: 'SES KANALLARI',
         channels: [
-          { id: 'vc1', name: 'Genel', type: 'voice' as const, activeUsers: 5 },
-          { id: 'vc2', name: 'Oyun', type: 'voice' as const, activeUsers: 2 },
-          { id: 'vc3', name: 'Müzik', type: 'voice' as const },
+          { id: 'vc1', name: 'Genel', type: 'voice' as const, activeUsers: 5, maxUsers: 10 },
+          { id: 'vc2', name: 'Oyun', type: 'voice' as const, activeUsers: 2, maxUsers: 5 },
+          { id: 'vc3', name: 'Müzik', type: 'voice' as const, activeUsers: 0, maxUsers: 8 },
         ]
       }
     ],
@@ -221,7 +221,7 @@ export const useMockData = () => {
         id: 'cat4',
         name: 'SES',
         channels: [
-          { id: 'vc4', name: 'Oyun Odası', type: 'voice' as const, activeUsers: 3 },
+          { id: 'vc4', name: 'Oyun Odası', type: 'voice' as const, activeUsers: 3, maxUsers: 8 },
         ]
       }
     ],
@@ -242,7 +242,7 @@ export const useMockData = () => {
         name: 'MÜZİK',
         channels: [
           { id: 'ch11', name: 'müzik-paylaşım', type: 'text' as const },
-          { id: 'vc5', name: 'Dinleme Odası', type: 'voice' as const },
+          { id: 'vc5', name: 'Dinleme Odası', type: 'voice' as const, activeUsers: 0, maxUsers: 12 },
         ]
       }
     ]

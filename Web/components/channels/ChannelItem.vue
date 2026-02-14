@@ -4,7 +4,7 @@
       'group flex items-center gap-1.5 px-2 py-1.5 mx-1 rounded cursor-pointer transition-colors',
       isActive ? 'bg-bg-tertiary/60 text-text-primary' : 'text-text-muted hover:bg-bg-tertiary/40 hover:text-text-secondary'
     )"
-    @click="emit('click')"
+    @click="handleClick"
   >
     <!-- Channel Icon -->
     <div class="shrink-0 w-5 h-5 flex items-center justify-center">
@@ -53,13 +53,12 @@
       >
         {{ channel.unreadCount > 99 ? '99+' : channel.unreadCount }}
       </Badge>
-      
-      <!-- Active Users (Voice Channels, inline with name) -->
-      <div v-if="channel.type === 'voice' && channel.activeUsers && channel.activeUsers > 0" class="flex items-center gap-1 ml-[5px]">
-        <div class="w-2 h-2 bg-status-online rounded-full" />
-        <span class="text-xs">{{ channel.activeUsers }}</span>
-      </div>
     </span>
+    
+    <!-- Voice Channel Capacity (right-aligned) -->
+    <div v-if="channel.type === 'voice' && channel.maxUsers" class="flex items-center gap-1 text-xs text-text-muted">
+      <span>{{ String(channel.activeUsers || 0).padStart(2, '0') }}/{{ String(channel.maxUsers).padStart(2, '0') }}</span>
+    </div>
     
     <!-- NSFW Badge -->
     <Badge v-if="channel.isNsfw" variant="role" size="sm" class="!bg-accent-red !text-white">
@@ -87,18 +86,24 @@
       <button 
         class="w-4 h-4 hover:text-text-primary"
         @click.stop="emit('invite')"
+        title="Davet oluştur"
       >
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <line x1="19" y1="8" x2="19" y2="14"/>
+          <line x1="22" y1="11" x2="16" y2="11"/>
         </svg>
       </button>
       
       <button 
         class="w-4 h-4 hover:text-text-primary"
         @click.stop="emit('settings')"
+        title="Kanal ayarları"
       >
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v6m0 6v6M4.2 4.2l4.2 4.2m5.6 5.6l4.2 4.2M1 12h6m6 0h6M4.2 19.8l4.2-4.2m5.6-5.6l4.2-4.2"/>
         </svg>
       </button>
     </div>
@@ -118,6 +123,7 @@ interface Channel {
   unreadCount?: number
   hasUnread?: boolean
   activeUsers?: number
+  maxUsers?: number
 }
 
 interface Props {
@@ -125,13 +131,22 @@ interface Props {
   isActive?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   isActive: false
 })
 
 const emit = defineEmits<{
   'click': []
+  'join-voice': []
   'invite': []
   'settings': []
 }>()
+
+const handleClick = () => {
+  if (props.channel.type === 'voice') {
+    emit('join-voice')
+  } else {
+    emit('click')
+  }
+}
 </script>
