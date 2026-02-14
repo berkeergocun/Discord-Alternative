@@ -55,8 +55,8 @@
       </Badge>
     </span>
     
-    <!-- Voice Channel Capacity (right-aligned) -->
-    <div v-if="channel.type === 'voice' && channel.maxUsers" class="flex items-center gap-1 text-xs text-text-muted">
+    <!-- Voice Channel Capacity (right-aligned, hidden on hover) -->
+    <div v-if="channel.type === 'voice' && channel.maxUsers" class="flex items-center gap-1 text-xs text-text-muted opacity-100 group-hover:opacity-0 transition-opacity">
       <span>{{ String(channel.activeUsers || 0).padStart(2, '0') }}/{{ String(channel.maxUsers).padStart(2, '0') }}</span>
     </div>
     
