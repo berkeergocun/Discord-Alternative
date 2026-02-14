@@ -31,16 +31,18 @@
         </span>
     </div>
     
-    <!-- Active indicator -->
+    <!-- Active indicator (always present) -->
     <div 
-      v-if="isActive"
-      class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 w-2 h-10 bg-white rounded-r-full transition-all duration-200"
+      :class="[
+        'absolute left-0 top-1/2 -translate-y-1/2 w-1 bg-white rounded-r-full transition-all duration-200',
+        isActive ? 'h-10 -translate-x-[3px]' : 'h-0 group-hover:h-5 -translate-x-[3px]'
+      ]"
     />
     
     <!-- Notification badge -->
     <div 
       v-if="hasNotification && !isActive"
-      class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 w-2 h-2 bg-white rounded-full"
+      class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-[3px] w-2 h-2 bg-white rounded-full"
     />
     
     <!-- Unread count badge -->

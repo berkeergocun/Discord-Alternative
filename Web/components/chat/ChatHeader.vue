@@ -2,23 +2,19 @@
   <div class="h-12 border-b border-bg-tertiary px-4 flex items-center justify-between">
     <div class="flex items-center gap-2 min-w-0 flex-1">
       <!-- Channel Icon -->
-      <svg 
+      <Hash 
         v-if="type === 'text'"
-        class="w-6 h-6 text-text-muted shrink-0" 
-        fill="currentColor" 
-        viewBox="0 0 24 24"
-      >
-        <path d="M10.5 3h-1L8 9H4v2h3.5l-.75 4H3v2h3.25L5 21h1l1.25-4H11l-1.25 4h1l1.25-4H16v-2h-4.25l.75-4H17V9h-4.75L13.5 3h-1l-1.25 6H7.5l1-6zm.25 8-.75 4H6.25l.75-4h3.75z"/>
-      </svg>
+        :size="24"
+        :stroke-width="2.5"
+        class="text-text-muted shrink-0"
+      />
       
-      <svg 
+      <Volume2 
         v-else-if="type === 'voice'"
-        class="w-6 h-6 text-text-muted shrink-0" 
-        fill="currentColor" 
-        viewBox="0 0 24 24"
-      >
-        <path d="M11.999 3.077c-4.08 0-7.385 3.306-7.385 7.385 0 4.08 3.305 7.385 7.385 7.385 4.08 0 7.385-3.305 7.385-7.385 0-4.079-3.305-7.385-7.385-7.385zm3.693 7.385c0 2.04-1.653 3.693-3.693 3.693s-3.693-1.653-3.693-3.693 1.653-3.693 3.693-3.693 3.693 1.653 3.693 3.693zM6.462 19.847c0-3.054 2.483-5.538 5.537-5.538 3.054 0 5.538 2.484 5.538 5.538h1.846c0-4.08-3.305-7.384-7.384-7.384-4.08 0-7.385 3.304-7.385 7.384h1.848z"/>
-      </svg>
+        :size="24"
+        :stroke-width="2.5"
+        class="text-text-muted shrink-0"
+      />
       
       <div class="min-w-0 flex-1">
         <h3 class="text-base font-semibold text-text-primary truncate">
@@ -90,6 +86,8 @@
 </template>
 
 <script setup lang="ts">
+import { Hash, Volume2 } from 'lucide-vue-next'
+
 interface Props {
   title: string
   description?: string
