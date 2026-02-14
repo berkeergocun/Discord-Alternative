@@ -6,21 +6,30 @@
     <svg 
       class="w-3 h-3 transition-transform"
       :class="{ 'rotate-0': isCollapsed, 'rotate-90': !isCollapsed }"
-      fill="currentColor" 
       viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
     >
-      <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+      <polyline points="9 18 15 12 9 6"/>
     </svg>
     <span class="flex-1 text-left">{{ name }}</span>
     
     <!-- Add channel button (shown on hover) -->
     <svg 
       class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"
-      fill="currentColor" 
       viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
       @click.stop="emit('add-channel')"
     >
-      <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+      <line x1="12" y1="5" x2="12" y2="19"/>
+      <line x1="5" y1="12" x2="19" y2="12"/>
     </svg>
   </button>
 </template>
