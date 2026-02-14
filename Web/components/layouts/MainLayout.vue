@@ -51,6 +51,7 @@
       <!-- Chat Area (DM or Channel - takes remaining space) -->
       <div v-else-if="activeView === 'dm' || activeView === 'channel'" class="flex-1 flex min-w-0">
         <ChatArea
+          :key="activeView === 'dm' ? `dm-${activeDmId}` : `channel-${activeChannelId}`"
           class="flex-1 min-w-0"
           :channelName="activeView === 'dm' ? activeDmName : activeChannelName"
           :channelDescription="activeView === 'channel' ? activeChannelDescription : ''"
@@ -225,35 +226,10 @@ const updateWindowWidth = () => {
 
 // Initialize from route
 onMounted(() => {
-  const serverId = route.params.serverId as string
-  const channelId = route.params.channelId as string
-  
-  if (serverId) {
-    activeServerId.value = serverId
-    
-    if (channelId) {
-      if (serverId === '@me') {
-        // DM conversation
-        activeDmId.value = channelId
-        activeView.value = 'dm'
-      } else {
-        // Server channel
-        activeChannelId.value = channelId
-        activeView.value = 'channel'
-      }
-    } else {
-      // Just server or @me without channel
-      if (serverId === '@me') {
-        activeView.value = 'friends'
-      } else {
-        activeView.value = 'channel'
-      }
-    }
-  }
-  
   // Setup window resize listener
   updateWindowWidth()
   window.addEventListener('resize', updateWindowWidth)
+  // Note: Route state initialization is handled by the watch with immediate: true
 })
 
 onUnmounted(() => {
@@ -446,35 +422,26 @@ const currentGroupMembers = computed(() => {
 
 // Event handlers
 const handleServerChange = (serverId: string) => {
-  activeServerId.value = serverId
-  activeChannelId.value = ''
-  activeDmId.value = ''
-  
+  // Let the watch handler update the state
   if (serverId === '@me') {
-    activeView.value = 'friends'
     navigateTo('/channels/@me')
   } else {
-    activeView.value = 'channel'
     navigateTo(`/channels/${serverId}`)
   }
 }
 
 const handleChannelSelect = (channelId: string) => {
-  activeChannelId.value = channelId
-  activeView.value = 'channel'
+  // Let the watch handler update the state
   navigateTo(`/channels/${activeServerId.value}/${channelId}`)
 }
 
 const handleDmSelect = (dmId: string) => {
-  activeDmId.value = dmId
-  activeView.value = 'dm'
+  // Let the watch handler update the state
   navigateTo(`/channels/@me/${dmId}`)
 }
 
 const handleFriendsView = () => {
-  activeView.value = 'friends'
-  activeDmId.value = ''
-  activeChannelId.value = ''
+  // Let the watch handler update the state
   navigateTo('/channels/@me')
 }
 
