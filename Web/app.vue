@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 overflow-hidden">
+  <div class="fixed inset-0 overflow-auto min-h-full">
     <ClientOnly>
       <LoadingScreen v-if="isInitialLoad" @loaded="handleLoaded" />
       <NuxtPage v-else class="h-full w-full" />

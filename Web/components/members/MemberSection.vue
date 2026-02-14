@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center gap-2 px-2 py-1 text-xs font-semibold uppercase tracking-wide">
+  <div class="flex items-center gap-2 px-2 py-1 text-[11px] font-medium uppercase tracking-wide">
     <span 
       :style="{ color: color || '#B5BAC1' }"
       class="flex-1"

@@ -1,5 +1,5 @@
 <template>
-  <div class="px-4 pb-6">
+  <div class="px-4 mb-[10px]">
     <!-- Reply Preview -->
     <div v-if="replyTo" class="bg-bg-secondary rounded-t-lg px-4 py-2 flex items-center justify-between">
       <div class="flex items-center gap-2 text-sm text-text-secondary">
@@ -20,10 +20,10 @@
       </button>
     </div>
     
-    <!-- Input Area -->
+    <!-- Input Area: small padding by default, grows on focus -->
     <div 
       :class="cn(
-        'bg-bg-secondary flex items-end gap-2 px-4 py-3',
+        'bg-bg-secondary flex items-end gap-2 justify-start px-2 py-2 rounded-lg transition-[padding] duration-200 focus-within:px-4 focus-within:py-3',
         replyTo ? 'rounded-b-lg' : 'rounded-lg'
       )"
     >

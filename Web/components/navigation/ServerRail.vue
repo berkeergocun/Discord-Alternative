@@ -28,23 +28,23 @@
           />
         </div>
         
-        <!-- Add Server Button -->
+        <!-- Add Server - Plus by Icons8 https://icons8.com/icon/1501/plus -->
         <div 
           class="w-12 h-12 rounded-[24px] hover:rounded-[16px] bg-bg-secondary hover:bg-accent-green transition-all duration-200 flex items-center justify-center cursor-pointer group"
           @click="emit('add-server')"
         >
-          <svg class="w-6 h-6 text-accent-green group-hover:text-white transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="w-6 h-6 text-accent-green group-hover:text-white transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
         </div>
         
-        <!-- Explore Button -->
+        <!-- Explore - Compass by Icons8 https://icons8.com/icon/9672/compass -->
         <div 
           class="w-12 h-12 rounded-[24px] hover:rounded-[16px] bg-bg-secondary hover:bg-accent-green transition-all duration-200 flex items-center justify-center cursor-pointer group"
           @click="emit('explore')"
         >
-          <svg class="w-6 h-6 text-accent-green group-hover:text-white transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="w-6 h-6 text-accent-green group-hover:text-white transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="10"/>
             <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor"/>
           </svg>

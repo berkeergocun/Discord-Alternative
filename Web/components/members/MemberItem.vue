@@ -1,15 +1,17 @@
 <template>
   <div 
-    class="flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer hover:bg-bg-tertiary/40 transition-colors group"
+    class="relative z-10 flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer hover:bg-bg-tertiary/40 transition-colors group"
     @click="emit('click')"
   >
-    <Avatar
-      :src="member.avatar"
-      :alt="member.username"
-      :fallback="member.username[0]"
-      :status="member.status"
-      size="sm"
-    />
+    <div class="relative z-10 shrink-0">
+      <Avatar
+        :src="member.avatar"
+        :alt="member.username"
+        :fallback="member.username[0]"
+        :status="member.status"
+        size="sm"
+      />
+    </div>
     
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-1.5">

@@ -3,27 +3,30 @@
     <template #default>
       <div 
         :class="cn(
-          'relative rounded-full overflow-hidden bg-bg-secondary flex items-center justify-center shrink-0',
+          'relative z-10 rounded-full overflow-visible bg-bg-secondary shrink-0',
           sizeClasses[size],
           className
         )"
       >
-        <img 
-          v-if="src" 
-          :src="src" 
-          :alt="alt"
-          class="w-full h-full object-cover"
-          @error="handleError"
-        />
-        <span v-else class="text-text-secondary font-medium">
-          {{ fallback }}
-        </span>
+        <!-- Inner circle: clips image/fallback only -->
+        <div class="absolute inset-0 rounded-full overflow-hidden flex items-center justify-center">
+          <img 
+            v-if="src" 
+            :src="src" 
+            :alt="alt"
+            class="w-full h-full object-cover"
+            @error="handleError"
+          />
+          <span v-else class="text-text-secondary font-medium">
+            {{ fallback }}
+          </span>
+        </div>
         
-        <!-- Status indicator -->
+        <!-- Status indicator: outside clip, high z-index -->
         <div 
           v-if="status"
           :class="cn(
-            'absolute rounded-full border-2 border-bg-secondary',
+            'absolute z-[100] rounded-full border-2 border-bg-secondary pointer-events-none',
             statusSizeClasses[size],
             statusClasses[status]
           )"

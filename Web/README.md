@@ -46,6 +46,7 @@ npm run build
 - **TypeScript** - Type safety
 - **Radix Vue** - Headless UI components
 - **Lucide Vue** - Icon library
+- **Icons8** - İkonlar: [Megaphone](https://icons8.com/icon/2930/megaphone) (duyuru), [Microphone](https://icons8.com/icon/12653/microphone) / Mute, [Headphones](https://icons8.com/icon/2768/headphones), [Settings](https://icons8.com/icon/82751/settings), [Plus](https://icons8.com/icon/1501/plus), [Compass](https://icons8.com/icon/9672/compass), [Home](https://icons8.com/icon/73/home)
 
 ## Proje Yapısı
 

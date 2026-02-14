@@ -22,10 +22,9 @@
         <path d="M6.34315 10C6.34315 9.44772 5.89543 9 5.34315 9C4.79086 9 4.34315 9.44772 4.34315 10C4.34315 14.3 7.5 17.8 11.5 18.2V21H8C7.44772 21 7 21.4477 7 22C7 22.5523 7.44772 23 8 23H16C16.5523 23 17 22.5523 17 22C17 21.4477 16.5523 21 16 21H12.5V18.2C16.5 17.8 19.6569 14.3 19.6569 10C19.6569 9.44772 19.2091 9 18.6569 9C18.1046 9 17.6569 9.44772 17.6569 10C17.6569 13.5 15.5 16 12 16C8.5 16 6.34315 13.5 6.34315 10Z"/>
       </svg>
       
-      <!-- Announcement Channel (Megaphone) - Clean outline -->
-      <svg v-else-if="channel.type === 'announcement'" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M3 5V19L8 14L13 19V5L8 10L3 5Z"/>
-        <path d="M13 5V19L18 14V19C18 20.1 18.9 21 20 21C21.1 21 22 20.1 22 19V5C22 3.9 21.1 3 20 3C18.9 3 18 3.9 18 5V10L13 5Z"/>
+      <!-- Announcement (Megaphone) - Icon by Icons8 https://icons8.com/icon/2930/megaphone -->
+      <svg v-else-if="channel.type === 'announcement'" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m3 11 18-5v12L3 14v-3z"/>
       </svg>
       
       <!-- Forum Channel (Messages) - Simple bubble stack -->
@@ -55,11 +54,6 @@
       </Badge>
     </span>
     
-    <!-- Voice Channel Capacity (right-aligned, hidden on hover) -->
-    <div v-if="channel.type === 'voice' && channel.maxUsers" class="flex items-center gap-1 text-xs text-text-muted opacity-100 group-hover:opacity-0 transition-opacity">
-      <span>{{ String(channel.activeUsers || 0).padStart(2, '0') }}/{{ String(channel.maxUsers).padStart(2, '0') }}</span>
-    </div>
-    
     <!-- NSFW Badge -->
     <Badge v-if="channel.isNsfw" variant="role" size="sm" class="!bg-accent-red !text-white">
       NSFW
@@ -75,14 +69,19 @@
       <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM9 8V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9z"/>
     </svg>
     
-    <!-- Unread Indicator -->
-    <div 
-      v-else-if="channel.hasUnread"
-      class="w-2 h-2 bg-text-primary rounded-full"
-    />
-    
-    <!-- Hover Actions -->
-    <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+    <!-- Right-aligned slot: Voice capacity (default) or Hover actions -->
+    <div class="ml-auto flex items-center justify-end relative min-w-[2rem]">
+      <!-- Voice Channel Capacity - pill style (hidden on hover) -->
+      <div v-if="channel.type === 'voice' && channel.maxUsers" class="inline-flex rounded-full overflow-hidden border border-bg-tertiary opacity-100 group-hover:opacity-0 transition-opacity z-0">
+        <span class="px-1.5 py-0.5 text-[10px] font-medium bg-bg-tertiary/80 text-text-secondary min-w-[1.25rem] text-center">
+          {{ String(channel.activeUsers || 0).padStart(2, '0') }}
+        </span>
+        <span class="px-1.5 py-0.5 text-[10px] font-medium bg-bg-tertiary text-text-muted min-w-[1.25rem] text-center border-l border-bg-tertiary">
+          {{ String(channel.maxUsers).padStart(2, '0') }}
+        </span>
+      </div>
+      <!-- Hover Actions (all channel types, same position) -->
+      <div class="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity absolute right-0 z-10">
       <button 
         class="w-4 h-4 hover:text-text-primary"
         @click.stop="emit('invite')"
@@ -102,10 +101,11 @@
         title="Kanal ayarları"
       >
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M12 1v6m0 6v6M4.2 4.2l4.2 4.2m5.6 5.6l4.2 4.2M1 12h6m6 0h6M4.2 19.8l4.2-4.2m5.6-5.6l4.2-4.2"/>
+          <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
         </svg>
       </button>
+      </div>
     </div>
   </div>
 </template>

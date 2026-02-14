@@ -173,6 +173,15 @@
         @click="closeMobileSidebars"
       />
     </div>
+
+    <!-- Create Server Modal -->
+    <CreateServerModal
+      :open="createServerModalOpen"
+      @update:open="createServerModalOpen = $event"
+      @create-custom="onCreateServerCustom"
+      @create-from-template="onCreateServerFromTemplate"
+      @join-server="onJoinServer"
+    />
   </div>
 </template>
 
@@ -199,6 +208,7 @@ const showMemberList = ref(true)
 const showActivityFeed = ref(true)
 const showUserProfile = ref(true)
 const showGroupProfile = ref(true)
+const createServerModalOpen = ref(false)
 const replyTo = ref(null)
 const isLoadingMessages = ref(false)
 const typingUsers = ref<string[]>([])
@@ -238,31 +248,40 @@ onUnmounted(() => {
   window.removeEventListener('resize', updateWindowWidth)
 })
 
-// Watch route changes
-watch(() => route.params, (params) => {
-  const serverId = params.serverId as string
-  const channelId = params.channelId as string
-  
+// Watch route changes (handle both /channels/@me/[dmId] and /channels/[serverId]/[channelId])
+watch(() => ({ ...route.params, path: route.path }), ({ serverId: s, channelId: c, dmId, path }) => {
+  const serverId = s as string | undefined
+  const channelId = c as string | undefined
+
+  // DM route: /channels/@me/[dmId].vue -> params.dmId
+  if (dmId) {
+    activeServerId.value = '@me'
+    activeDmId.value = dmId as string
+    activeView.value = 'dm'
+    activeChannelId.value = ''
+    return
+  }
+
+  // Friends view: /channels/@me (exact)
+  if (path === '/channels/@me' || path === '/channels/@me/') {
+    activeServerId.value = '@me'
+    activeView.value = 'friends'
+    activeDmId.value = ''
+    activeChannelId.value = ''
+    return
+  }
+
+  // Server channel routes: /channels/[serverId]/[channelId]
   if (serverId) {
     activeServerId.value = serverId
-    
     if (channelId) {
-      if (serverId === '@me') {
-        activeDmId.value = channelId
-        activeView.value = 'dm'
-      } else {
-        activeChannelId.value = channelId
-        activeView.value = 'channel'
-      }
+      activeChannelId.value = channelId
+      activeView.value = 'channel'
+      activeDmId.value = ''
     } else {
-      if (serverId === '@me') {
-        activeView.value = 'friends'
-        activeDmId.value = ''
-        activeChannelId.value = ''
-      } else {
-        activeView.value = 'channel'
-        activeChannelId.value = ''
-      }
+      activeView.value = 'channel'
+      activeChannelId.value = ''
+      activeDmId.value = ''
     }
   }
 }, { immediate: true })
@@ -460,7 +479,22 @@ const handleFriendsView = () => {
 }
 
 const handleAddServer = () => {
-  console.log('Add server')
+  createServerModalOpen.value = true
+}
+
+const onCreateServerCustom = () => {
+  createServerModalOpen.value = false
+  // TODO: navigate to create server flow or open name step
+}
+
+const onCreateServerFromTemplate = (templateId: string) => {
+  createServerModalOpen.value = false
+  // TODO: create server from template
+}
+
+const onJoinServer = () => {
+  createServerModalOpen.value = false
+  // TODO: open join-with-invite modal or page
 }
 
 const handleExplore = () => {

@@ -1,13 +1,15 @@
 <template>
   <div 
     :class="cn(
-      'inline-flex items-center justify-center font-semibold',
+      'inline-flex items-center justify-center font-semibold leading-none tabular-nums box-border',
       variantClasses[variant],
       sizeClasses[size],
       className
     )"
   >
-    <slot />
+    <span class="flex items-center justify-center w-full h-full text-center antialiased">
+      <slot />
+    </span>
   </div>
 </template>
 
