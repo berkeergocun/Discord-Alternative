@@ -5,7 +5,7 @@
     @mouseleave="isHovered = false"
   >
     <!-- Reply Preview -->
-    <div v-if="message.replyTo" class="flex items-center gap-2 mb-1 text-sm text-text-muted">
+    <div v-if="message.replyTo" class="flex items-center gap-2 mb-1 text-xs text-text-muted">
       <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
         <path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/>
       </svg>
@@ -25,7 +25,7 @@
       
       <div class="flex-1 min-w-0">
         <!-- Text Content -->
-        <div class="text-text-primary break-words whitespace-pre-wrap">
+        <div class="text-sm text-text-primary break-words whitespace-pre-wrap">
           {{ message.content }}
           <span v-if="message.edited" class="text-xs text-text-muted ml-1">(düzenlendi)</span>
         </div>
