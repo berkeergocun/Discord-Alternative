@@ -1,40 +1,52 @@
 <template>
   <div class="shrink-0">
-    <!-- Server Banner (if server type) -->
-    <div 
-      v-if="type === 'server' && server"
-      class="relative h-32 overflow-hidden cursor-pointer"
-      @click="handleClick"
-    >
-      <!-- Banner Image/Color -->
+    <!-- Server Header with Banner (if server type) -->
+    <div v-if="type === 'server' && server" class="border-b border-bg-tertiary">
+      <!-- Server Name Header (Always Visible) -->
       <div 
-        class="absolute inset-0"
-        :style="{ 
-          backgroundColor: server.bannerColor || '#5865F2',
-          backgroundImage: server.banner ? `url(${server.banner})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }"
-      />
+        class="h-12 px-4 flex items-center justify-between cursor-pointer hover:bg-bg-tertiary/50 transition-colors"
+        @click="toggleBanner"
+      >
+        <h2 class="font-semibold text-text-primary truncate flex-1">{{ title }}</h2>
+        
+        <!-- Dropdown icon -->
+        <svg 
+          :class="[
+            'w-5 h-5 text-text-secondary transition-transform',
+            isBannerOpen ? 'rotate-180' : ''
+          ]"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path d="M7 10l5 5 5-5z"/>
+        </svg>
+      </div>
       
-      <!-- Gradient Overlay -->
-      <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-bg-secondary/80" />
-      
-      <!-- Server Info -->
-      <div class="relative h-full flex flex-col justify-end p-3">
-        <div class="flex items-center gap-2 mb-1">
-          <h2 class="font-bold text-white text-lg truncate drop-shadow-lg">{{ title }}</h2>
-          <svg 
-            class="w-5 h-5 text-white/80 shrink-0"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path d="M7 10l5 5 5-5z"/>
-          </svg>
+      <!-- Collapsible Banner -->
+      <div 
+        v-show="isBannerOpen"
+        class="relative h-24 overflow-hidden"
+      >
+        <!-- Banner Image/Color -->
+        <div 
+          class="absolute inset-0"
+          :style="{ 
+            backgroundColor: server.bannerColor || '#5865F2',
+            backgroundImage: server.banner ? `url(${server.banner})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }"
+        />
+        
+        <!-- Gradient Overlay -->
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-bg-secondary/60" />
+        
+        <!-- Server Description -->
+        <div class="relative h-full flex items-end p-3">
+          <p v-if="server.description" class="text-white/90 text-xs truncate drop-shadow font-medium">
+            {{ server.description }}
+          </p>
         </div>
-        <p v-if="server.description" class="text-white/80 text-xs truncate drop-shadow">
-          {{ server.description }}
-        </p>
       </div>
     </div>
     
@@ -75,14 +87,24 @@ interface Props {
   server?: Server | null
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'menu-click': []
   'search': [query: string]
 }>()
 
+const isBannerOpen = ref(true)
+
 const handleClick = () => {
   emit('menu-click')
+}
+
+const toggleBanner = () => {
+  if (props.type === 'server') {
+    isBannerOpen.value = !isBannerOpen.value
+  } else {
+    handleClick()
+  }
 }
 </script>
