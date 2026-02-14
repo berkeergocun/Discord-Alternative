@@ -39,7 +39,7 @@
         <Users :size="24" :stroke-width="2" />
       </button>
       
-      <button class="px-3 py-1.5 bg-accent-green text-white text-sm font-medium rounded hover:bg-accent-green/90 transition-colors">
+      <button class="hidden md:block px-3 py-1.5 bg-accent-green text-white text-sm font-medium rounded hover:bg-accent-green/90 transition-colors">
         Arkadaş Ekle
       </button>
     </div>
