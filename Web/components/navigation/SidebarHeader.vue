@@ -3,7 +3,7 @@
     <!-- Server Header with Banner (if server type) -->
     <div v-if="type === 'server' && server" class="relative">
       <!-- Banner (Always Visible) -->
-      <div class="relative h-[200px] overflow-hidden">
+      <div class="relative h-[120px] overflow-hidden">
         <!-- Banner Image/Color Background -->
         <div 
           class="absolute inset-0"
@@ -32,15 +32,12 @@
                 <h2 class="font-semibold text-white text-sm truncate drop-shadow-lg">{{ title }}</h2>
               </div>
               
-              <!-- Right Icons -->
-              <div class="flex items-center gap-2">
-                <!-- Dropdown icon -->
-                <ChevronDown 
-                  :size="18"
-                  :stroke-width="2.5"
-                  class="text-white/90 drop-shadow"
-                />
-              </div>
+              <!-- Dropdown icon -->
+              <ChevronDown 
+                :size="18"
+                :stroke-width="2.5"
+                class="text-white/90 drop-shadow"
+              />
             </div>
           </DropdownMenuTrigger>
           
@@ -111,13 +108,6 @@
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        
-        <!-- Center Server Icon -->
-        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div class="w-28 h-28 rounded-full bg-bg-secondary/80 backdrop-blur-sm flex items-center justify-center text-white font-bold text-4xl border-[6px] border-bg-secondary/90">
-            {{ server.name?.[0] || '?' }}
-          </div>
-        </div>
       </div>
       
       <div class="border-b border-bg-tertiary" />
