@@ -58,8 +58,6 @@ interface Props {
   activeChannelId?: string
 }
 
-defineProps<Props>()
-
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
