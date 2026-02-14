@@ -7,6 +7,7 @@
             :name="category.name"
             :isCollapsed="collapsedCategories.includes(category.id)"
             @toggle="toggleCategory(category.id)"
+            @add-channel="openCreateChannelModal(category)"
           />
           
           <div v-if="!collapsedCategories.includes(category.id)" class="space-y-0.5 mt-0.5">
@@ -20,6 +21,13 @@
           </div>
         </div>
       </div>
+      
+      <!-- Create Channel Modal -->
+      <CreateChannelModal
+        v-model:open="isModalOpen"
+        :category-name="selectedCategory?.name || ''"
+        @create="handleCreateChannel"
+      />
     </template>
     <template #fallback>
       <ChannelListSkeleton />
@@ -52,11 +60,16 @@ interface Props {
 
 defineProps<Props>()
 
+const props = defineProps<Props>()
+
 const emit = defineEmits<{
   'channel-select': [channelId: string]
+  'create-channel': [categoryId: string, type: string, name: string]
 }>()
 
 const collapsedCategories = ref<string[]>([])
+const isModalOpen = ref(false)
+const selectedCategory = ref<Category | null>(null)
 
 const toggleCategory = (categoryId: string) => {
   const index = collapsedCategories.value.indexOf(categoryId)
@@ -64,6 +77,17 @@ const toggleCategory = (categoryId: string) => {
     collapsedCategories.value.splice(index, 1)
   } else {
     collapsedCategories.value.push(categoryId)
+  }
+}
+
+const openCreateChannelModal = (category: Category) => {
+  selectedCategory.value = category
+  isModalOpen.value = true
+}
+
+const handleCreateChannel = (type: string, name: string) => {
+  if (selectedCategory.value) {
+    emit('create-channel', selectedCategory.value.id, type, name)
   }
 }
 </script>

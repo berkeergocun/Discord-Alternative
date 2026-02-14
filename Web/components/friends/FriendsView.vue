@@ -45,7 +45,7 @@
     </div>
     
     <!-- Search Bar -->
-    <div class="px-8 pt-4 pb-2">
+    <div class="px-4 pt-3 pb-2">
       <input
         type="text"
         v-model="searchQuery"
@@ -55,7 +55,7 @@
     </div>
     
     <!-- Friends List -->
-    <div class="flex-1 overflow-y-auto px-8 py-2 custom-scrollbar">
+    <div class="flex-1 overflow-y-auto px-4 py-2 custom-scrollbar">
       <div class="space-y-4">
         <div
           v-for="friend in filteredFriends"
