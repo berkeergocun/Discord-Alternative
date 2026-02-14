@@ -71,7 +71,7 @@
     </svg>
     
     <!-- Active Users (Voice Channels) -->
-    <div v-if="channel.type === 'voice' && channel.activeUsers && channel.activeUsers > 0" class="flex items-center gap-1">
+    <div v-if="channel.type === 'voice' && channel.activeUsers && channel.activeUsers > 0" class="flex items-center gap-1 ml-[5px]">
       <div class="w-2 h-2 bg-status-online rounded-full" />
       <span class="text-xs">{{ channel.activeUsers }}</span>
     </div>
