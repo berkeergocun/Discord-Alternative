@@ -40,20 +40,20 @@
       </svg>
     </div>
     
-    <!-- Unread Badge (after icon, before name) -->
-    <Badge 
-      v-if="channel.unreadCount && channel.unreadCount > 0"
-      variant="notification"
-      size="sm"
-      class="ml-1"
-    >
-      {{ channel.unreadCount > 99 ? '99+' : channel.unreadCount }}
-    </Badge>
-    
     <!-- Channel Name -->
     <span class="flex-1 text-sm font-medium truncate">
       {{ channel.name }}
     </span>
+    
+    <!-- Unread Badge (after name) -->
+    <Badge 
+      v-if="channel.unreadCount && channel.unreadCount > 0"
+      variant="notification"
+      size="sm"
+      class="mr-1"
+    >
+      {{ channel.unreadCount > 99 ? '99+' : channel.unreadCount }}
+    </Badge>
     
     <!-- NSFW Badge -->
     <Badge v-if="channel.isNsfw" variant="role" size="sm" class="!bg-accent-red !text-white">
