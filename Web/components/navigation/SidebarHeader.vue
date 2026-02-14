@@ -20,25 +20,23 @@
         
         <!-- Server Name Header (Overlaid at top) -->
         <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <div 
-              class="absolute top-0 left-0 right-0 h-12 px-3 flex items-center justify-between cursor-pointer z-10 hover:backdrop-blur-sm hover:bg-black/20 transition-all"
-            >
-              <div class="flex items-center gap-2 flex-1 min-w-0">
-                <!-- Server Icon Small -->
-                <div class="w-6 h-6 rounded-full bg-bg-tertiary/60 backdrop-blur-sm flex items-center justify-center text-white text-xs font-bold shrink-0">
-                  {{ server.name?.[0] || '?' }}
-                </div>
-                <h2 class="font-semibold text-white text-sm truncate drop-shadow-lg">{{ title }}</h2>
+          <DropdownMenuTrigger 
+            class="absolute top-0 left-0 right-0 h-12 px-3 flex items-center justify-between cursor-pointer z-10 hover:backdrop-blur-sm hover:bg-black/20 transition-all w-full text-left"
+          >
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+              <!-- Server Icon Small -->
+              <div class="w-6 h-6 rounded-full bg-bg-tertiary/60 backdrop-blur-sm flex items-center justify-center text-white text-xs font-bold shrink-0">
+                {{ server.name?.[0] || '?' }}
               </div>
-              
-              <!-- Dropdown icon -->
-              <ChevronDown 
-                :size="18"
-                :stroke-width="2.5"
-                class="text-white/90 drop-shadow"
-              />
+              <h2 class="font-semibold text-white text-sm truncate drop-shadow-lg">{{ title }}</h2>
             </div>
+            
+            <!-- Dropdown icon -->
+            <ChevronDown 
+              :size="18"
+              :stroke-width="2.5"
+              class="text-white/90 drop-shadow shrink-0"
+            />
           </DropdownMenuTrigger>
           
           <DropdownMenuContent class="w-56">
