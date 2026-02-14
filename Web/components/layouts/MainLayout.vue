@@ -14,6 +14,7 @@
       :type="sidebarType"
       :headerTitle="sidebarTitle"
       :user="currentUser"
+      :server="currentServer"
       @menu-click="handleMenuClick"
       @search="handleSearch"
       @settings="handleSettings"
@@ -49,13 +50,7 @@
       </div>
       
       <!-- Chat Area (DM or Channel - takes remaining space) -->
-      <div v-else-if="activeView === 'dm' || activeView === 'channel'" class="flex-1 flex flex-col min-w-0">
-        <!-- Server Banner (only for channels) -->
-        <ServerBanner 
-          v-if="activeView === 'channel' && currentServer"
-          :server="currentServer"
-        />
-        
+      <div v-else-if="activeView === 'dm' || activeView === 'channel'" class="flex-1 flex min-w-0">
         <ChatArea
           :key="activeView === 'dm' ? `dm-${activeDmId}` : `channel-${activeChannelId}`"
           class="flex-1 min-w-0"
