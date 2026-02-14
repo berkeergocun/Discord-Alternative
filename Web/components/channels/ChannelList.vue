@@ -36,6 +36,8 @@
 </template>
 
 <script setup lang="ts">
+import CreateChannelModal from './CreateChannelModal.vue'
+
 interface Channel {
   id: string
   name: string

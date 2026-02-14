@@ -133,7 +133,11 @@
 
 <script setup lang="ts">
 import { ChevronDown, Search, UserPlus, Settings, Plus, FolderPlus, Calendar, Bell, Shield, Eye, Check, LogOut } from 'lucide-vue-next'
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '~/components/ui/dropdown-menu'
+import DropdownMenu from '~/components/ui/dropdown-menu/DropdownMenu.vue'
+import DropdownMenuTrigger from '~/components/ui/dropdown-menu/DropdownMenuTrigger.vue'
+import DropdownMenuContent from '~/components/ui/dropdown-menu/DropdownMenuContent.vue'
+import DropdownMenuItem from '~/components/ui/dropdown-menu/DropdownMenuItem.vue'
+import DropdownMenuSeparator from '~/components/ui/dropdown-menu/DropdownMenuSeparator.vue'
 
 interface Server {
   id: string
