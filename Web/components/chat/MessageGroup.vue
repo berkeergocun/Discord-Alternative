@@ -12,7 +12,7 @@
       
       <div class="flex-1 min-w-0">
         <div class="flex items-baseline gap-2 mb-0.5">
-          <span class="font-semibold text-text-primary hover:underline cursor-pointer">
+          <span class="text-sm font-semibold text-text-primary hover:underline cursor-pointer">
             {{ author.displayName || author.username }}
           </span>
           
