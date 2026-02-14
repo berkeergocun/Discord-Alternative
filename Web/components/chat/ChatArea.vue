@@ -7,9 +7,13 @@
           :title="channelName"
           :description="channelDescription"
           :type="channelType"
+          :showMemberList="showMemberList"
+          :showUserProfile="showUserProfile"
+          :showGroupProfile="showGroupProfile"
           @pins="emit('pins')"
           @threads="emit('threads')"
           @members="emit('members')"
+          @toggle-profile="emit('toggle-profile')"
           @search="emit('search')"
         />
         
@@ -84,18 +88,25 @@ interface Props {
   isLoading?: boolean
   typingUsers?: string[]
   replyTo?: Message | null
+  showMemberList?: boolean
+  showUserProfile?: boolean
+  showGroupProfile?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isLoading: false,
   typingUsers: () => [],
-  replyTo: null
+  replyTo: null,
+  showMemberList: false,
+  showUserProfile: false,
+  showGroupProfile: false
 })
 
 const emit = defineEmits<{
   'pins': []
   'threads': []
   'members': []
+  'toggle-profile': []
   'search': []
   'load-more': []
   'send': [message: string]

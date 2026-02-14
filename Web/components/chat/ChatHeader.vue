@@ -52,13 +52,27 @@
         </svg>
       </button>
       
+      <!-- Members button (for channels) -->
       <button 
+        v-if="type !== 'dm'"
         class="text-text-muted hover:text-text-primary transition-colors"
         @click="emit('members')"
-        title="Üyeler"
+        :title="showMemberList ? 'Üyeleri Gizle' : 'Üyeleri Göster'"
       >
         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
           <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+        </svg>
+      </button>
+      
+      <!-- Profile toggle (for DMs) -->
+      <button 
+        v-if="type === 'dm'"
+        class="text-text-muted hover:text-text-primary transition-colors"
+        @click="emit('toggle-profile')"
+        :title="(showUserProfile || showGroupProfile) ? 'Profili Gizle' : 'Profili Göster'"
+      >
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
         </svg>
       </button>
       
@@ -80,14 +94,22 @@ interface Props {
   title: string
   description?: string
   type: 'text' | 'voice' | 'dm'
+  showMemberList?: boolean
+  showUserProfile?: boolean
+  showGroupProfile?: boolean
 }
 
-defineProps<Props>()
+withDefaults(defineProps<Props>(), {
+  showMemberList: false,
+  showUserProfile: false,
+  showGroupProfile: false
+})
 
 const emit = defineEmits<{
   'pins': []
   'threads': []
   'members': []
+  'toggle-profile': []
   'search': []
 }>()
 </script>
