@@ -70,44 +70,44 @@
       <!-- Message Actions (shown on hover) -->
       <div 
         v-if="isHovered"
-        class="flex items-center gap-1 bg-bg-floating border border-bg-secondary rounded-md p-1 absolute top-0 right-0 -translate-y-1/2"
+        class="flex items-center gap-0.5 bg-bg-floating border border-bg-secondary rounded-md p-0.5 absolute top-0 right-0 -translate-y-1/2"
       >
         <button
-          class="w-8 h-8 flex items-center justify-center hover:bg-bg-secondary rounded transition-colors text-text-muted hover:text-text-primary"
+          class="w-7 h-7 flex items-center justify-center hover:bg-bg-secondary rounded transition-colors text-text-muted hover:text-text-primary"
           @click="emit('react', '👍')"
           title="Reaksiyon ekle"
         >
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zm0-2a8 8 0 100-16 8 8 0 000 16zm-3.5-6.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm7 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm-7 1.5c.826 0 1.5.674 1.5 1.5h5c0-.826.674-1.5 1.5-1.5H8.5z"/>
           </svg>
         </button>
         
         <button
-          class="w-8 h-8 flex items-center justify-center hover:bg-bg-secondary rounded transition-colors text-text-muted hover:text-text-primary"
+          class="w-7 h-7 flex items-center justify-center hover:bg-bg-secondary rounded transition-colors text-text-muted hover:text-text-primary"
           @click="emit('reply')"
           title="Yanıtla"
         >
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
             <path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/>
           </svg>
         </button>
         
         <button
-          class="w-8 h-8 flex items-center justify-center hover:bg-bg-secondary rounded transition-colors text-text-muted hover:text-text-primary"
+          class="w-7 h-7 flex items-center justify-center hover:bg-bg-secondary rounded transition-colors text-text-muted hover:text-text-primary"
           @click="emit('edit')"
           title="Düzenle"
         >
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
             <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
           </svg>
         </button>
         
         <button
-          class="w-8 h-8 flex items-center justify-center hover:bg-bg-secondary rounded transition-colors text-text-muted hover:text-accent-red"
+          class="w-7 h-7 flex items-center justify-center hover:bg-bg-secondary rounded transition-colors text-text-muted hover:text-accent-red"
           @click="emit('delete')"
           title="Sil"
         >
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
             <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
           </svg>
         </button>
