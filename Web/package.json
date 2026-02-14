@@ -1,0 +1,30 @@
+{
+  "name": "discord-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@vueuse/core": "^11.5.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-vue-next": "^0.468.0",
+    "nuxt": "^3.15.3",
+    "radix-vue": "^1.9.12",
+    "tailwind-merge": "^2.6.0",
+    "vue": "latest",
+    "vue-router": "latest"
+  },
+  "devDependencies": {
+    "@nuxtjs/tailwindcss": "^6.12.4",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17"
+  }
+}
