@@ -56,11 +56,11 @@
     
     <!-- Friends List -->
     <div class="flex-1 overflow-y-auto px-8 py-2 custom-scrollbar">
-      <div class="space-y-4">
+      <div class="space-y-2">
         <div
           v-for="friend in filteredFriends"
           :key="friend.id"
-          class="flex items-center justify-between p-4 rounded-lg border-t border-bg-secondary hover:bg-bg-secondary/50 transition-colors"
+          class="flex items-center justify-between p-3 rounded-lg border-t border-bg-secondary hover:bg-bg-secondary/50 transition-colors"
         >
           <div class="flex items-center gap-3 flex-1 min-w-0">
             <Avatar
@@ -68,19 +68,19 @@
               :alt="friend.username"
               :fallback="friend.username[0]"
               :status="friend.status"
-              size="lg"
+              size="md"
             />
             
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
-                <span class="font-semibold text-text-primary">
+                <span class="text-sm font-semibold text-text-primary">
                   {{ friend.displayName || friend.username }}
                 </span>
                 <Badge v-if="friend.bot" variant="bot" size="sm">
                   BOT
                 </Badge>
               </div>
-              <p class="text-sm text-text-muted truncate">
+              <p class="text-xs text-text-muted truncate">
                 {{ getStatusText(friend) }}
               </p>
             </div>
@@ -88,20 +88,20 @@
           
           <div class="flex items-center gap-2">
             <button
-              class="w-9 h-9 flex items-center justify-center rounded-full bg-bg-tertiary hover:bg-bg-floating text-text-secondary hover:text-text-primary transition-colors"
+              class="w-8 h-8 flex items-center justify-center rounded-full bg-bg-tertiary hover:bg-bg-floating text-text-secondary hover:text-text-primary transition-colors"
               @click="emit('start-dm', getDmForFriend(friend.id))"
               title="Mesaj Gönder"
             >
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
               </svg>
             </button>
             
             <button
-              class="w-9 h-9 flex items-center justify-center rounded-full bg-bg-tertiary hover:bg-bg-floating text-text-secondary hover:text-text-primary transition-colors"
+              class="w-8 h-8 flex items-center justify-center rounded-full bg-bg-tertiary hover:bg-bg-floating text-text-secondary hover:text-text-primary transition-colors"
               title="Daha Fazla"
             >
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
               </svg>
             </button>
