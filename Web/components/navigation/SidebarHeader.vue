@@ -3,10 +3,10 @@
     <!-- Server Header with Banner (if server type) -->
     <div v-if="type === 'server' && server" class="relative">
       <!-- Banner (Always Visible) -->
-      <div class="relative h-[200px] overflow-hidden group">
+      <div class="relative h-[200px] overflow-hidden">
         <!-- Banner Image/Color Background -->
         <div 
-          class="absolute inset-0 group-hover:scale-105 transition-transform duration-300"
+          class="absolute inset-0"
           :style="{ 
             backgroundColor: server.bannerColor || '#5865F2',
             backgroundImage: server.banner ? `url(${server.banner})` : 'none',
@@ -16,19 +16,13 @@
         />
         
         <!-- Dark Top Overlay for Header -->
-        <div class="absolute top-0 left-0 right-0 h-14 bg-gradient-to-b from-black/80 to-transparent group-hover:from-black/70 transition-colors" />
-        
-        <!-- Dark Bottom Overlay for Boost Status -->
-        <div class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/80 to-transparent group-hover:from-black/70 transition-colors" />
-        
-        <!-- Hover Overlay -->
-        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
+        <div class="absolute top-0 left-0 right-0 h-14 bg-gradient-to-b from-black/60 to-transparent" />
         
         <!-- Server Name Header (Overlaid at top) -->
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
             <div 
-              class="absolute top-0 left-0 right-0 h-12 px-3 flex items-center justify-between cursor-pointer z-10"
+              class="absolute top-0 left-0 right-0 h-12 px-3 flex items-center justify-between cursor-pointer z-10 hover:backdrop-blur-sm hover:bg-black/20 transition-all"
             >
               <div class="flex items-center gap-2 flex-1 min-w-0">
                 <!-- Server Icon Small -->
@@ -120,19 +114,8 @@
         
         <!-- Center Server Icon -->
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div class="w-28 h-28 rounded-full bg-bg-secondary/70 group-hover:bg-bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-white font-bold text-4xl border-[6px] border-bg-secondary/80 group-hover:border-bg-secondary transition-all duration-300">
+          <div class="w-28 h-28 rounded-full bg-bg-secondary/80 backdrop-blur-sm flex items-center justify-center text-white font-bold text-4xl border-[6px] border-bg-secondary/90">
             {{ server.name?.[0] || '?' }}
-          </div>
-        </div>
-        
-        <!-- Bottom Server Boost Status -->
-        <div v-if="server.boostCount !== undefined" class="absolute bottom-0 left-0 right-0 px-3 pb-3 z-10">
-          <div class="bg-gradient-to-r from-purple-600/95 to-pink-600/95 backdrop-blur-sm rounded-lg px-4 py-2.5 flex items-center justify-between shadow-lg cursor-pointer hover:from-purple-700 hover:to-pink-700 transition-all">
-            <span class="text-white text-sm font-semibold drop-shadow">Takviye Hedefi</span>
-            <div class="flex items-center gap-1.5">
-              <span class="text-white text-sm font-semibold drop-shadow">{{ server.boostCount }}/{{ server.boostGoal }} Takviye</span>
-              <ChevronRight :size="16" :stroke-width="2.5" class="text-white" />
-            </div>
           </div>
         </div>
       </div>
@@ -161,7 +144,7 @@
 </template>
 
 <script setup lang="ts">
-import { ChevronDown, ChevronRight, Search, UserPlus, Settings, Plus, FolderPlus, Calendar, Bell, Shield, Eye, Check, LogOut } from 'lucide-vue-next'
+import { ChevronDown, Search, UserPlus, Settings, Plus, FolderPlus, Calendar, Bell, Shield, Eye, Check, LogOut } from 'lucide-vue-next'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '~/components/ui/dropdown-menu'
 
 interface Server {
