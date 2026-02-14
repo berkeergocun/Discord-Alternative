@@ -8,7 +8,10 @@ export const useMockData = () => {
       unreadCount: 5,
       banner: '',
       bannerColor: '#2B7A3D',
-      description: 'Minecraft Türkiye\'nin en iyi survival sunucusu! 🎮'
+      description: 'Minecraft Türkiye\'nin en iyi survival sunucusu! 🎮',
+      boostLevel: 2,
+      boostCount: 21,
+      boostGoal: 31
     },
     {
       id: 'server2',
@@ -18,7 +21,10 @@ export const useMockData = () => {
       unreadCount: 0,
       banner: '',
       bannerColor: '#E74C3C',
-      description: 'Her türlü oyun için topluluk sunucusu'
+      description: 'Her türlü oyun için topluluk sunucusu',
+      boostLevel: 1,
+      boostCount: 8,
+      boostGoal: 15
     },
     {
       id: 'server3',
@@ -28,7 +34,10 @@ export const useMockData = () => {
       unreadCount: 2,
       banner: '',
       bannerColor: '#3498DB',
-      description: 'Yazılım geliştiricileri için bilgi paylaşım platformu 💻'
+      description: 'Yazılım geliştiricileri için bilgi paylaşım platformu 💻',
+      boostLevel: 3,
+      boostCount: 45,
+      boostGoal: 60
     },
     {
       id: 'server4',
@@ -38,7 +47,10 @@ export const useMockData = () => {
       unreadCount: 0,
       banner: '',
       bannerColor: '#9B59B6',
-      description: 'Müzik severler burada! 🎵'
+      description: 'Müzik severler burada! 🎵',
+      boostLevel: 0,
+      boostCount: 3,
+      boostGoal: 7
     }
   ]
 

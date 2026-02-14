@@ -3,8 +3,8 @@
     <!-- Server Header with Banner (if server type) -->
     <div v-if="type === 'server' && server" class="relative">
       <!-- Banner (Always Visible) -->
-      <div class="relative h-32 overflow-hidden">
-        <!-- Banner Image/Color -->
+      <div class="relative h-[200px] overflow-hidden">
+        <!-- Banner Image/Color Background -->
         <div 
           class="absolute inset-0"
           :style="{ 
@@ -15,23 +15,35 @@
           }"
         />
         
-        <!-- Gradient Overlay -->
-        <div class="absolute inset-0 bg-gradient-to-b from-black/20 to-bg-secondary/80" />
+        <!-- Dark Top Overlay for Header -->
+        <div class="absolute top-0 left-0 right-0 h-14 bg-gradient-to-b from-black/80 to-transparent" />
         
-        <!-- Server Name Header (Overlaid on banner) -->
+        <!-- Dark Bottom Overlay for Boost Status -->
+        <div class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/80 to-transparent" />
+        
+        <!-- Server Name Header (Overlaid at top) -->
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
             <div 
-              class="absolute top-0 left-0 right-0 h-12 px-4 flex items-center justify-between cursor-pointer hover:bg-black/20 transition-colors"
+              class="absolute top-0 left-0 right-0 h-12 px-3 flex items-center justify-between cursor-pointer hover:bg-black/10 transition-colors z-10"
             >
-              <h2 class="font-semibold text-white truncate flex-1 drop-shadow-lg">{{ title }}</h2>
+              <div class="flex items-center gap-2 flex-1 min-w-0">
+                <!-- Server Icon Small -->
+                <div class="w-6 h-6 rounded-full bg-bg-tertiary/60 backdrop-blur-sm flex items-center justify-center text-white text-xs font-bold shrink-0">
+                  {{ server.name?.[0] || '?' }}
+                </div>
+                <h2 class="font-semibold text-white text-sm truncate drop-shadow-lg">{{ title }}</h2>
+              </div>
               
-              <!-- Dropdown icon -->
-              <ChevronDown 
-                :size="20"
-                :stroke-width="2.5"
-                class="text-white/90 drop-shadow"
-              />
+              <!-- Right Icons -->
+              <div class="flex items-center gap-2">
+                <!-- Dropdown icon -->
+                <ChevronDown 
+                  :size="18"
+                  :stroke-width="2.5"
+                  class="text-white/90 drop-shadow"
+                />
+              </div>
             </div>
           </DropdownMenuTrigger>
           
@@ -103,11 +115,22 @@
           </DropdownMenuContent>
         </DropdownMenu>
         
-        <!-- Server Description -->
-        <div class="absolute bottom-0 left-0 right-0 p-3">
-          <p v-if="server.description" class="text-white/95 text-xs truncate drop-shadow font-medium">
-            {{ server.description }}
-          </p>
+        <!-- Center Server Icon -->
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div class="w-28 h-28 rounded-full bg-bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-white font-bold text-4xl border-[6px] border-bg-secondary">
+            {{ server.name?.[0] || '?' }}
+          </div>
+        </div>
+        
+        <!-- Bottom Server Boost Status -->
+        <div v-if="server.boostCount !== undefined" class="absolute bottom-0 left-0 right-0 px-3 pb-3 z-10">
+          <div class="bg-gradient-to-r from-purple-600/95 to-pink-600/95 backdrop-blur-sm rounded-lg px-4 py-2.5 flex items-center justify-between shadow-lg cursor-pointer hover:from-purple-700 hover:to-pink-700 transition-all">
+            <span class="text-white text-sm font-semibold drop-shadow">Takviye Hedefi</span>
+            <div class="flex items-center gap-1.5">
+              <span class="text-white text-sm font-semibold drop-shadow">{{ server.boostCount }}/{{ server.boostGoal }} Takviye</span>
+              <ChevronRight :size="16" :stroke-width="2.5" class="text-white" />
+            </div>
+          </div>
         </div>
       </div>
       
@@ -135,7 +158,7 @@
 </template>
 
 <script setup lang="ts">
-import { ChevronDown, Search, UserPlus, Settings, Plus, FolderPlus, Calendar, Bell, Shield, Eye, Check, LogOut } from 'lucide-vue-next'
+import { ChevronDown, ChevronRight, Search, UserPlus, Settings, Plus, FolderPlus, Calendar, Bell, Shield, Eye, Check, LogOut } from 'lucide-vue-next'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '~/components/ui/dropdown-menu'
 
 interface Server {
@@ -145,6 +168,9 @@ interface Server {
   banner?: string
   bannerColor?: string
   description?: string
+  boostLevel?: number
+  boostCount?: number
+  boostGoal?: number
 }
 
 interface Props {
