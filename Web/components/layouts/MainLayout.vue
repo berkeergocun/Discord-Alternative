@@ -49,7 +49,13 @@
       </div>
       
       <!-- Chat Area (DM or Channel - takes remaining space) -->
-      <div v-else-if="activeView === 'dm' || activeView === 'channel'" class="flex-1 flex min-w-0">
+      <div v-else-if="activeView === 'dm' || activeView === 'channel'" class="flex-1 flex flex-col min-w-0">
+        <!-- Server Banner (only for channels) -->
+        <ServerBanner 
+          v-if="activeView === 'channel' && currentServer"
+          :server="currentServer"
+        />
+        
         <ChatArea
           :key="activeView === 'dm' ? `dm-${activeDmId}` : `channel-${activeChannelId}`"
           class="flex-1 min-w-0"
@@ -280,6 +286,11 @@ const currentChannels = computed(() => {
 
 const dms = computed(() => mockDMs)
 const friends = computed(() => mockFriends)
+
+const currentServer = computed(() => {
+  if (activeServerId.value === '@me') return null
+  return servers.value.find(s => s.id === activeServerId.value) || null
+})
 
 const activeActivities = computed(() => {
   return mockFriends

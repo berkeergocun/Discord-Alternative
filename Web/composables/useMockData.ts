@@ -5,28 +5,40 @@ export const useMockData = () => {
       name: 'Minespear',
       icon: '',
       hasNotification: true,
-      unreadCount: 5
+      unreadCount: 5,
+      banner: '',
+      bannerColor: '#2B7A3D',
+      description: 'Minecraft Türkiye\'nin en iyi survival sunucusu! 🎮'
     },
     {
       id: 'server2',
       name: 'Oyun Sunucusu',
       icon: '',
       hasNotification: false,
-      unreadCount: 0
+      unreadCount: 0,
+      banner: '',
+      bannerColor: '#E74C3C',
+      description: 'Her türlü oyun için topluluk sunucusu'
     },
     {
       id: 'server3',
       name: 'Yazılım',
       icon: '',
       hasNotification: true,
-      unreadCount: 2
+      unreadCount: 2,
+      banner: '',
+      bannerColor: '#3498DB',
+      description: 'Yazılım geliştiricileri için bilgi paylaşım platformu 💻'
     },
     {
       id: 'server4',
       name: 'Müzik',
       icon: '',
       hasNotification: false,
-      unreadCount: 0
+      unreadCount: 0,
+      banner: '',
+      bannerColor: '#9B59B6',
+      description: 'Müzik severler burada! 🎵'
     }
   ]
 
