@@ -40,6 +40,16 @@
       </svg>
     </div>
     
+    <!-- Unread Badge (after icon, before name) -->
+    <Badge 
+      v-if="channel.unreadCount && channel.unreadCount > 0"
+      variant="notification"
+      size="sm"
+      class="ml-1"
+    >
+      {{ channel.unreadCount > 99 ? '99+' : channel.unreadCount }}
+    </Badge>
+    
     <!-- Channel Name -->
     <span class="flex-1 text-sm font-medium truncate">
       {{ channel.name }}
@@ -65,15 +75,6 @@
       <div class="w-2 h-2 bg-status-online rounded-full" />
       <span class="text-xs">{{ channel.activeUsers }}</span>
     </div>
-    
-    <!-- Unread Badge -->
-    <Badge 
-      v-if="channel.unreadCount && channel.unreadCount > 0"
-      variant="notification"
-      size="sm"
-    >
-      {{ channel.unreadCount > 99 ? '99+' : channel.unreadCount }}
-    </Badge>
     
     <!-- Unread Indicator -->
     <div 
