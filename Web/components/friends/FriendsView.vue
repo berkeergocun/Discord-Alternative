@@ -30,6 +30,17 @@
       
       <div class="flex-1" />
       
+      <!-- Toggle Activity Feed Button -->
+      <button 
+        class="text-text-muted hover:text-text-primary transition-colors"
+        @click="emit('toggle-activity')"
+        :title="showActivityFeed ? 'Aktiviteleri Gizle' : 'Aktiviteleri Göster'"
+      >
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+        </svg>
+      </button>
+      
       <button class="px-3 py-1.5 bg-accent-green text-white text-sm font-medium rounded hover:bg-accent-green/90 transition-colors">
         Arkadaş Ekle
       </button>
@@ -128,12 +139,16 @@ interface Friend {
 
 interface Props {
   friends: Friend[]
+  showActivityFeed?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  showActivityFeed: true
+})
 
 const emit = defineEmits<{
   'start-dm': [dmId: string]
+  'toggle-activity': []
 }>()
 
 const tabs = ['Çevrimiçi', 'Tümü', 'Bekleyen', 'Engellenen']

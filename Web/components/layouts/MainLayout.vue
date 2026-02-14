@@ -36,13 +36,15 @@
     </Sidebar>
     
     <!-- Main Content Area -->
-    <div class="flex-1 flex min-w-0">
+    <div class="flex-1 flex min-w-0 relative">
       <!-- Friends View (takes full width) -->
       <div v-if="activeView === 'friends'" class="flex-1 flex min-w-0">
         <FriendsView
           class="flex-1"
           :friends="friends"
+          :showActivityFeed="showActivityFeed"
           @start-dm="handleDmSelect"
+          @toggle-activity="toggleActivityFeed"
         />
       </div>
       
@@ -57,9 +59,13 @@
           :isLoading="isLoadingMessages"
           :typingUsers="typingUsers"
           :replyTo="replyTo"
+          :showMemberList="showMemberList"
+          :showUserProfile="activeView === 'dm' && currentDmType === 'dm' ? showUserProfile : false"
+          :showGroupProfile="activeView === 'dm' && currentDmType === 'group' ? showGroupProfile : false"
           @pins="handlePins"
           @threads="handleThreads"
           @members="toggleMemberList"
+          @toggle-profile="currentDmType === 'dm' ? toggleUserProfile() : toggleGroupProfile()"
           @search="handleChannelSearch"
           @load-more="loadMoreMessages"
           @send="handleSendMessage"
@@ -75,17 +81,25 @@
       <!-- Member List (fixed width, right-aligned in channel view) -->
       <MemberList
         v-if="activeView === 'channel' && showMemberList"
-        class="w-60 shrink-0"
+        :class="[
+          'shrink-0',
+          isMobile ? 'absolute right-0 top-0 bottom-0 w-60 bg-bg-secondary z-10 border-l border-bg-tertiary' : 'w-60'
+        ]"
         :members="currentMembers"
         :roles="currentRoles"
         @member-click="handleMemberClick"
       />
       
       <!-- Activity Feed (fixed width, right-aligned in friends view ONLY) -->
-      <template v-if="activeView === 'friends'">
+      <template v-if="activeView === 'friends' && showActivityFeed">
         <Suspense>
           <template #default>
-            <div class="w-80 border-l border-bg-tertiary shrink-0">
+            <div 
+              :class="[
+                'border-l border-bg-tertiary shrink-0',
+                isMobile ? 'absolute right-0 top-0 bottom-0 w-80 bg-bg-secondary z-10' : 'w-80'
+              ]"
+            >
               <ActivityFeed
                 :activities="activeActivities"
                 @activity-click="handleActivityClick"
@@ -93,7 +107,12 @@
             </div>
           </template>
           <template #fallback>
-            <div class="w-80 border-l border-bg-tertiary shrink-0">
+            <div 
+              :class="[
+                'border-l border-bg-tertiary shrink-0',
+                isMobile ? 'absolute right-0 top-0 bottom-0 w-80 bg-bg-secondary z-10' : 'w-80'
+              ]"
+            >
               <ActivityFeedSkeleton />
             </div>
           </template>
@@ -101,10 +120,15 @@
       </template>
       
       <!-- User Profile (fixed width, right-aligned in DM view for 1-on-1) -->
-      <template v-if="activeView === 'dm' && currentDmType === 'dm'">
+      <template v-if="activeView === 'dm' && currentDmType === 'dm' && showUserProfile">
         <Suspense>
           <template #default>
-            <div class="shrink-0">
+            <div 
+              :class="[
+                'shrink-0',
+                isMobile ? 'absolute right-0 top-0 bottom-0 w-80 z-10' : ''
+              ]"
+            >
               <UserProfile
                 :user="currentDmUser"
                 :note="currentDmNote"
@@ -124,8 +148,12 @@
       </template>
       
       <!-- Group Profile (fixed width, right-aligned in DM view for groups) -->
-      <template v-if="activeView === 'dm' && currentDmType === 'group'">
+      <template v-if="activeView === 'dm' && currentDmType === 'group' && showGroupProfile">
         <GroupProfile
+          :class="[
+            'shrink-0',
+            isMobile ? 'absolute right-0 top-0 bottom-0 w-80 z-10' : ''
+          ]"
           :groupName="currentGroupName"
           :memberCount="currentGroupMemberCount"
           :owner="currentGroupOwner"
@@ -134,6 +162,13 @@
           @leave-group="handleLeaveGroup"
         />
       </template>
+      
+      <!-- Mobile Backdrop -->
+      <div 
+        v-if="isMobile && (showMemberList || showActivityFeed || showUserProfile || showGroupProfile)"
+        class="absolute inset-0 bg-black/50 z-[9]"
+        @click="closeMobileSidebars"
+      />
     </div>
   </div>
 </template>
@@ -158,9 +193,35 @@ const activeChannelId = ref('')
 const activeDmId = ref('')
 const activeView = ref<'friends' | 'dm' | 'channel'>('friends')
 const showMemberList = ref(true)
+const showActivityFeed = ref(true)
+const showUserProfile = ref(true)
+const showGroupProfile = ref(true)
 const replyTo = ref(null)
 const isLoadingMessages = ref(false)
 const typingUsers = ref<string[]>([])
+const windowWidth = ref(0)
+
+// Responsive breakpoint
+const isMobile = computed(() => windowWidth.value < 1024)
+
+// Initialize window width tracking
+const updateWindowWidth = () => {
+  windowWidth.value = window.innerWidth
+  
+  // Auto-hide sidebars on mobile
+  if (isMobile.value) {
+    showMemberList.value = false
+    showActivityFeed.value = false
+    showUserProfile.value = false
+    showGroupProfile.value = false
+  } else {
+    // Auto-show on desktop
+    showMemberList.value = true
+    showActivityFeed.value = true
+    showUserProfile.value = true
+    showGroupProfile.value = true
+  }
+}
 
 // Initialize from route
 onMounted(() => {
@@ -189,6 +250,14 @@ onMounted(() => {
       }
     }
   }
+  
+  // Setup window resize listener
+  updateWindowWidth()
+  window.addEventListener('resize', updateWindowWidth)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateWindowWidth)
 })
 
 // Watch route changes
@@ -443,6 +512,27 @@ const handleThreads = () => {
 
 const toggleMemberList = () => {
   showMemberList.value = !showMemberList.value
+}
+
+const toggleActivityFeed = () => {
+  showActivityFeed.value = !showActivityFeed.value
+}
+
+const toggleUserProfile = () => {
+  showUserProfile.value = !showUserProfile.value
+}
+
+const toggleGroupProfile = () => {
+  showGroupProfile.value = !showGroupProfile.value
+}
+
+const closeMobileSidebars = () => {
+  if (isMobile.value) {
+    showMemberList.value = false
+    showActivityFeed.value = false
+    showUserProfile.value = false
+    showGroupProfile.value = false
+  }
 }
 
 const handleChannelSearch = () => {
