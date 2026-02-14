@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col h-full bg-bg-secondary">
     <!-- Header -->
-    <div class="flex items-center justify-between px-4 py-3 border-b border-bg-tertiary">
+    <div class="h-12 flex items-center justify-between px-4 border-b border-bg-tertiary">
       <h2 class="text-sm font-semibold text-text-primary uppercase tracking-wide">
         Aktif Şimdi
       </h2>
