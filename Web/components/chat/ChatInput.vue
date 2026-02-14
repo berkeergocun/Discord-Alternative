@@ -1,0 +1,165 @@
+<template>
+  <div class="px-4 pb-6">
+    <!-- Reply Preview -->
+    <div v-if="replyTo" class="bg-bg-secondary rounded-t-lg px-4 py-2 flex items-center justify-between">
+      <div class="flex items-center gap-2 text-sm text-text-secondary">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/>
+        </svg>
+        <span class="font-medium">{{ replyTo.author.username }}</span>
+        <span class="truncate">{{ replyTo.content }}</span>
+      </div>
+      
+      <button 
+        class="text-text-muted hover:text-text-primary transition-colors"
+        @click="emit('cancel-reply')"
+      >
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Input Area -->
+    <div 
+      :class="cn(
+        'bg-bg-secondary flex items-end gap-2 px-4 py-3',
+        replyTo ? 'rounded-b-lg' : 'rounded-lg'
+      )"
+    >
+      <!-- Attach Button -->
+      <button 
+        class="w-9 h-9 flex items-center justify-center text-text-muted hover:text-text-primary transition-colors shrink-0"
+        @click="openFilePicker"
+      >
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+      </button>
+      
+      <!-- Text Input -->
+      <div class="flex-1">
+        <textarea
+          ref="inputRef"
+          v-model="message"
+          :placeholder="placeholder"
+          class="w-full bg-transparent text-text-primary placeholder:text-text-muted resize-none outline-none max-h-[200px] min-h-[24px]"
+          rows="1"
+          @input="handleInput"
+          @keydown.enter.exact.prevent="handleSend"
+          @keydown.shift.enter.exact="handleNewLine"
+        />
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-1 shrink-0">
+        <!-- Emoji Button -->
+        <button 
+          class="w-9 h-9 flex items-center justify-center text-text-muted hover:text-text-primary transition-colors"
+          @click="openEmojiPicker"
+        >
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zm0-2a8 8 0 100-16 8 8 0 000 16zm-3.5-6.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm7 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm-7 1.5c.826 0 1.5.674 1.5 1.5h5c0-.826.674-1.5 1.5-1.5H8.5z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    
+    <!-- File input (hidden) -->
+    <input
+      ref="fileInputRef"
+      type="file"
+      class="hidden"
+      multiple
+      @change="handleFileSelect"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { cn } from '~/lib/utils'
+
+interface Message {
+  id: string
+  author: {
+    id: string
+    username: string
+    avatar?: string
+  }
+  content: string
+}
+
+interface Props {
+  placeholder?: string
+  replyTo?: Message | null
+}
+
+withDefaults(defineProps<Props>(), {
+  placeholder: 'Mesaj gönder...'
+})
+
+const emit = defineEmits<{
+  'send': [message: string]
+  'cancel-reply': []
+  'typing': []
+}>()
+
+const message = ref('')
+const inputRef = ref<HTMLTextAreaElement>()
+const fileInputRef = ref<HTMLInputElement>()
+let typingTimeout: ReturnType<typeof setTimeout> | null = null
+
+const handleInput = (e: Event) => {
+  const target = e.target as HTMLTextAreaElement
+  
+  // Auto-resize textarea
+  target.style.height = 'auto'
+  target.style.height = `${target.scrollHeight}px`
+  
+  // Emit typing event (throttled)
+  if (typingTimeout) {
+    clearTimeout(typingTimeout)
+  }
+  
+  typingTimeout = setTimeout(() => {
+    emit('typing')
+  }, 500)
+}
+
+const handleSend = () => {
+  const trimmed = message.value.trim()
+  if (trimmed) {
+    emit('send', trimmed)
+    message.value = ''
+    
+    // Reset textarea height
+    if (inputRef.value) {
+      inputRef.value.style.height = 'auto'
+    }
+  }
+}
+
+const handleNewLine = () => {
+  message.value += '\n'
+}
+
+const openFilePicker = () => {
+  fileInputRef.value?.click()
+}
+
+const handleFileSelect = (e: Event) => {
+  const target = e.target as HTMLInputElement
+  const files = target.files
+  
+  if (files && files.length > 0) {
+    // Handle file upload
+    console.log('Files selected:', files)
+    // TODO: Implement file upload
+  }
+}
+
+const openEmojiPicker = () => {
+  // TODO: Implement emoji picker
+  console.log('Open emoji picker')
+}
+</script>
