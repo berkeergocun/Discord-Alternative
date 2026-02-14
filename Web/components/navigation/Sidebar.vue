@@ -6,6 +6,7 @@
         <SidebarHeader
           :title="headerTitle"
           :type="type"
+          :server="server"
           @menu-click="emit('menu-click')"
           @search="emit('search', $event)"
         />
@@ -39,10 +40,22 @@ interface User {
   customStatus?: string
 }
 
+interface Server {
+  id: string
+  name: string
+  icon?: string
+  banner?: string
+  bannerColor?: string
+  description?: string
+  hasNotification?: boolean
+  unreadCount?: number
+}
+
 interface Props {
   type: 'server' | 'dm'
   headerTitle: string
   user: User
+  server?: Server | null
 }
 
 defineProps<Props>()
