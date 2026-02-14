@@ -3,10 +3,10 @@
     <!-- Server Header with Banner (if server type) -->
     <div v-if="type === 'server' && server" class="relative">
       <!-- Banner (Always Visible) -->
-      <div class="relative h-[200px] overflow-hidden">
+      <div class="relative h-[200px] overflow-hidden group">
         <!-- Banner Image/Color Background -->
         <div 
-          class="absolute inset-0"
+          class="absolute inset-0 group-hover:scale-105 transition-transform duration-300"
           :style="{ 
             backgroundColor: server.bannerColor || '#5865F2',
             backgroundImage: server.banner ? `url(${server.banner})` : 'none',
@@ -16,16 +16,19 @@
         />
         
         <!-- Dark Top Overlay for Header -->
-        <div class="absolute top-0 left-0 right-0 h-14 bg-gradient-to-b from-black/80 to-transparent" />
+        <div class="absolute top-0 left-0 right-0 h-14 bg-gradient-to-b from-black/80 to-transparent group-hover:from-black/70 transition-colors" />
         
         <!-- Dark Bottom Overlay for Boost Status -->
-        <div class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/80 to-transparent" />
+        <div class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/80 to-transparent group-hover:from-black/70 transition-colors" />
+        
+        <!-- Hover Overlay -->
+        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
         
         <!-- Server Name Header (Overlaid at top) -->
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
             <div 
-              class="absolute top-0 left-0 right-0 h-12 px-3 flex items-center justify-between cursor-pointer hover:bg-black/10 transition-colors z-10"
+              class="absolute top-0 left-0 right-0 h-12 px-3 flex items-center justify-between cursor-pointer z-10"
             >
               <div class="flex items-center gap-2 flex-1 min-w-0">
                 <!-- Server Icon Small -->
@@ -116,8 +119,8 @@
         </DropdownMenu>
         
         <!-- Center Server Icon -->
-        <div class="absolute inset-0 flex items-center justify-center">
-          <div class="w-28 h-28 rounded-full bg-bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-white font-bold text-4xl border-[6px] border-bg-secondary">
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div class="w-28 h-28 rounded-full bg-bg-secondary/70 group-hover:bg-bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-white font-bold text-4xl border-[6px] border-bg-secondary/80 group-hover:border-bg-secondary transition-all duration-300">
             {{ server.name?.[0] || '?' }}
           </div>
         </div>
