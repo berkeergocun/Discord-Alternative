@@ -1,18 +1,21 @@
 <script setup lang="ts">
-import { DropdownMenuRoot, type DropdownMenuRootProps, useForwardPropsEmits } from 'radix-vue'
+import { DropdownMenuRoot } from 'radix-vue'
 
-const props = defineProps<DropdownMenuRootProps>()
-const emits = defineEmits<DropdownMenuRootEmits>()
-
-const forwarded = useForwardPropsEmits(props, emits)
-
-export interface DropdownMenuRootEmits {
-  'update:open': [value: boolean]
+interface Props {
+  open?: boolean
+  defaultOpen?: boolean
+  modal?: boolean
 }
+
+defineProps<Props>()
+
+defineEmits<{
+  'update:open': [value: boolean]
+}>()
 </script>
 
 <template>
-  <DropdownMenuRoot v-bind="forwarded">
+  <DropdownMenuRoot v-bind="$attrs">
     <slot />
   </DropdownMenuRoot>
 </template>

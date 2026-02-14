@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { DropdownMenuSeparator, type DropdownMenuSeparatorProps } from 'radix-vue'
+import { DropdownMenuSeparator } from 'radix-vue'
 import { cn } from '~/lib/utils'
 
-const props = defineProps<DropdownMenuSeparatorProps & { class?: string }>()
+interface Props {
+  class?: string
+}
+
+const props = defineProps<Props>()
 </script>
 
 <template>
