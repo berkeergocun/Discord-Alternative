@@ -39,7 +39,7 @@
             />
           </DropdownMenuTrigger>
           
-          <DropdownMenuContent class="w-56">
+          <DropdownMenuContent class="w-56 ml-3" :side-offset="8" align="start">
             <!-- Server Invite -->
             <DropdownMenuItem class="text-blurple hover:bg-blurple/10 focus:bg-blurple/10">
               <UserPlus :size="16" :stroke-width="2" />
