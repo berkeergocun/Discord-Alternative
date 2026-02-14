@@ -15,7 +15,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 <template>
   <DropdownMenuTrigger
-    v-bind="props"
+    :as="props.as"
+    :as-child="props.asChild"
     :class="cn('outline-none', props.class)"
   >
     <slot />

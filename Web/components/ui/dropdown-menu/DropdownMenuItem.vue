@@ -13,7 +13,7 @@ const props = defineProps<Props>()
 
 <template>
   <DropdownMenuItem
-    v-bind="props"
+    :disabled="props.disabled"
     :class="
       cn(
         'relative flex cursor-pointer select-none items-center gap-3 rounded-sm px-3 py-2 text-sm outline-none',
