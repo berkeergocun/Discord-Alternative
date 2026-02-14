@@ -99,7 +99,7 @@
             <div 
               :class="[
                 'border-l border-bg-tertiary shrink-0',
-                isMobile ? 'absolute right-0 top-0 bottom-0 w-80 bg-bg-secondary z-10' : 'w-80'
+                isMobile ? 'absolute right-0 top-0 bottom-0 w-72 bg-bg-secondary z-10' : 'w-72'
               ]"
             >
               <ActivityFeed
@@ -112,7 +112,7 @@
             <div 
               :class="[
                 'border-l border-bg-tertiary shrink-0',
-                isMobile ? 'absolute right-0 top-0 bottom-0 w-80 bg-bg-secondary z-10' : 'w-80'
+                isMobile ? 'absolute right-0 top-0 bottom-0 w-72 bg-bg-secondary z-10' : 'w-72'
               ]"
             >
               <ActivityFeedSkeleton />
