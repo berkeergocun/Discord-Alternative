@@ -101,6 +101,7 @@
 
 <script setup lang="ts">
 import { cn } from '~/lib/utils'
+import { Hash, Volume2, Megaphone, MessageSquare, Radio } from 'lucide-vue-next'
 
 interface Channel {
   id: string
