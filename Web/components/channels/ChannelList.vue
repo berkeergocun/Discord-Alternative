@@ -18,6 +18,7 @@
                 :channel="channel"
                 :isActive="activeChannelId === channel.id"
                 @click="emit('channel-select', channel.id)"
+                @join-voice="emit('join-voice', channel.id)"
               />
             </div>
           </div>
@@ -49,6 +50,7 @@ interface Channel {
   unreadCount?: number
   hasUnread?: boolean
   activeUsers?: number
+  maxUsers?: number
 }
 
 interface Category {
@@ -66,6 +68,7 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'channel-select': [channelId: string]
+  'join-voice': [channelId: string]
   'create-channel': [categoryId: string, type: string, name: string]
 }>()
 
