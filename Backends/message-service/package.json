@@ -1,0 +1,25 @@
+{
+  "name": "message-service",
+  "version": "1.0.0",
+  "description": "Message, DM, reactions, and search service",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "build": "bun build src/index.ts --outdir=dist --target=bun"
+  },
+  "dependencies": {
+    "elysia": "^1.0.0",
+    "@elysiajs/bearer": "^1.0.0",
+    "@elysiajs/cors": "^1.0.0",
+    "@elysiajs/swagger": "^1.0.0",
+    "mongoose": "^8.0.0",
+    "zod": "^3.22.0",
+    "ioredis": "^5.3.0",
+    "amqplib": "^0.10.0"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "@types/amqplib": "^0.10.0"
+  }
+}
