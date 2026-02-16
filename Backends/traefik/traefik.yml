@@ -1,0 +1,33 @@
+# Traefik Static Configuration
+
+api:
+  dashboard: true
+  insecure: true  # Development only
+
+log:
+  level: INFO
+
+accessLog: {}
+
+entryPoints:
+  web:
+    address: ":80"
+  
+  websecure:
+    address: ":443"
+    http:
+      tls: {}
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: discord_network
+  
+  file:
+    filename: /etc/traefik/dynamic.yml
+    watch: true
+
+ping: {}
+
+# Development mode - HTTP only, no TLS

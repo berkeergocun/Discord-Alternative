@@ -1,0 +1,205 @@
+# Traefik Dynamic Configuration
+
+http:
+  routers:
+    # API Gateway - Main Entry
+    api-gateway:
+      rule: "Host(`localhost`) && PathPrefix(`/api`)"
+      service: api-gateway
+      entryPoints:
+        - web
+      middlewares:
+        - strip-api-prefix
+
+    # Auth Service
+    auth-service:
+      rule: "Host(`localhost`) && PathPrefix(`/auth`)"
+      service: auth-service
+      entryPoints:
+        - web
+      middlewares:
+        - strip-auth-prefix
+
+    # User Service
+    user-service:
+      rule: "Host(`localhost`) && PathPrefix(`/users`)"
+      service: user-service
+      entryPoints:
+        - web
+      middlewares:
+        - strip-users-prefix
+
+    # Guild Service
+    guild-service:
+      rule: "Host(`localhost`) && PathPrefix(`/guilds`)"
+      service: guild-service
+      entryPoints:
+        - web
+      middlewares:
+        - strip-guilds-prefix
+
+    # Message Service
+    message-service:
+      rule: "Host(`localhost`) && PathPrefix(`/messages`)"
+      service: message-service
+      entryPoints:
+        - web
+      middlewares:
+        - strip-messages-prefix
+
+    # WebSocket Gateway
+    websocket-gateway:
+      rule: "Host(`localhost`) && PathPrefix(`/ws`)"
+      service: websocket-gateway
+      entryPoints:
+        - web
+      middlewares:
+        - strip-ws-prefix
+
+    # SFU Service
+    sfu-service:
+      rule: "Host(`localhost`) && PathPrefix(`/sfu`)"
+      service: sfu-service
+      entryPoints:
+        - web
+      middlewares:
+        - strip-sfu-prefix
+
+    # Swagger Documentation
+    swagger:
+      rule: "Host(`localhost`) && PathPrefix(`/swagger`)"
+      service: api-gateway
+      entryPoints:
+        - web
+
+  services:
+    # API Gateway Service
+    api-gateway:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3100"
+        healthCheck:
+          path: /health
+          interval: 30s
+          timeout: 5s
+
+    # Auth Service
+    auth-service:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3001"
+        healthCheck:
+          path: /health
+          interval: 30s
+          timeout: 5s
+
+    # User Service
+    user-service:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3002"
+        healthCheck:
+          path: /health
+          interval: 30s
+          timeout: 5s
+
+    # Guild Service
+    guild-service:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3003"
+        healthCheck:
+          path: /health
+          interval: 30s
+          timeout: 5s
+
+    # Message Service
+    message-service:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3004"
+        healthCheck:
+          path: /health
+          interval: 30s
+          timeout: 5s
+
+    # WebSocket Gateway
+    websocket-gateway:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3006"
+        healthCheck:
+          path: /health
+          interval: 30s
+          timeout: 5s
+
+    # SFU Service
+    sfu-service:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3007"
+        healthCheck:
+          path: /health
+          interval: 30s
+          timeout: 5s
+
+  middlewares:
+    # Strip prefix middlewares
+    strip-api-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api"
+    
+    strip-auth-prefix:
+      stripPrefix:
+        prefixes:
+          - "/auth"
+    
+    strip-users-prefix:
+      stripPrefix:
+        prefixes:
+          - "/users"
+    
+    strip-guilds-prefix:
+      stripPrefix:
+        prefixes:
+          - "/guilds"
+    
+    strip-messages-prefix:
+      stripPrefix:
+        prefixes:
+          - "/messages"
+    
+    strip-ws-prefix:
+      stripPrefix:
+        prefixes:
+          - "/ws"
+    
+    strip-sfu-prefix:
+      stripPrefix:
+        prefixes:
+          - "/sfu"
+
+    # CORS Middleware
+    cors:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+        accessControlAllowOriginList:
+          - "*"
+        accessControlAllowHeaders:
+          - "*"
+        accessControlMaxAge: 100
+        addVaryHeader: true
+
+    # Rate Limiting
+    rate-limit:
+      rateLimit:
+        average: 100
+        burst: 200
+        period: 1s
