@@ -1,116 +1,305 @@
-# WebSocket Gateway Documentation
+# WebSocket Gateway API Dokümantasyonu
 
-**WebSocket URL**: `ws://localhost:3005`  
-**HTTP API**: `http://localhost:3006` (Port 3006 for health/stats)
+**Port:** 3005 (WebSocket), 3006 (HTTP)  
+**WebSocket URL:** `ws://localhost:3005`  
+**HTTP URL:** `http://localhost:3006`  
+**Swagger:** `http://localhost:3006/swagger`
 
-WebSocket Gateway provides real-time event broadcasting to connected clients.
+## Genel Bilgi
 
-## Client Connection Flow
+WebSocket Gateway, gerçek zamanlı event'leri client'lara iletir. RabbitMQ'dan event'leri dinler ve Redis Pub/Sub ile çoklu gateway instance'ları arasında senkronizasyon sağlar.
 
-1. Connect to `ws://localhost:3005`
-2. Receive `ready` event
-3. Send `identify` event with userId and guildIds
-4. Receive `identified` confirmation
-5. Start receiving events
-6. Respond to `heartbeat` with `heartbeat_ack` (every 30s)
+---
 
-## Client → Server Events
+## WebSocket Connection
 
+### Connection
+
+```javascript
+const ws = new WebSocket('ws://localhost:3005');
+
+ws.onopen = () => {
+  // Identify (kimlik doğrulama)
+  ws.send(JSON.stringify({
+    op: 'IDENTIFY',
+    data: {
+      token: 'your-jwt-token'
+    }
+  }));
+};
+
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  console.log('Event received:', message);
+};
+```
+
+---
+
+## WebSocket Operations
+
+### Client → Server
+
+#### `IDENTIFY`
+
+WebSocket bağlantısını authenticate eder.
+
+**Payload:**
 ```json
-// Identify
 {
-  "event": "identify",
+  "op": "IDENTIFY",
   "data": {
-    "userId": "user_id",
-    "token": "jwt_token",
-    "guildIds": ["guild1", "guild2"]
-  }
-}
-
-// Heartbeat ACK
-{
-  "event": "heartbeat_ack",
-  "data": {}
-}
-
-// Guild Subscribe
-{
-  "event": "guild_subscribe",
-  "data": {
-    "guildId": "guild_id"
-  }
-}
-
-// Guild Unsubscribe
-{
-  "event": "guild_unsubscribe",
-  "data": {
-    "guildId": "guild_id"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
 ```
 
+**Response:**
+```json
+{
+  "op": "READY",
+  "data": {
+    "userId": "507f1f77bcf86cd799439012",
+    "guilds": ["507f1f77bcf86cd799439011"]
+  }
+}
+```
+
+#### `HEARTBEAT`
+
+Keep-alive ping gönderir.
+
+**Payload:**
+```json
+{
+  "op": "HEARTBEAT",
+  "data": null
+}
+```
+
+**Response:**
+```json
+{
+  "op": "HEARTBEAT_ACK",
+  "data": null
+}
+```
+
+#### `GUILD_SUBSCRIBE`
+
+Belirli bir guild'in event'lerine abone olur.
+
+**Payload:**
+```json
+{
+  "op": "GUILD_SUBSCRIBE",
+  "data": {
+    "guildId": "507f1f77bcf86cd799439011"
+  }
+}
+```
+
+#### `GUILD_UNSUBSCRIBE`
+
+Guild aboneliğini iptal eder.
+
+**Payload:**
+```json
+{
+  "op": "GUILD_UNSUBSCRIBE",
+  "data": {
+    "guildId": "507f1f77bcf86cd799439011"
+  }
+}
+```
+
+---
+
 ## Server → Client Events
 
-### Connection Events
-- `ready` - Connection established
-- `identified` - User identified successfully
-- `heartbeat` - Server heartbeat (every 30s)
-
 ### Message Events
-- `message.create` - New message sent
-- `message.update` - Message edited
-- `message.delete` - Message deleted
-- `typing.start` - User started typing
+
+#### `message.create`
+
+Yeni mesaj oluşturuldu.
+
+**Payload:**
+```json
+{
+  "event": "message.create",
+  "data": {
+    "channelId": "507f1f77bcf86cd799439013",
+    "message": {
+      "_id": "507f1f77bcf86cd799439015",
+      "authorId": "507f1f77bcf86cd799439012",
+      "content": "Hello!",
+      "createdAt": "2026-02-16T12:00:00.000Z"
+    }
+  }
+}
+```
+
+#### `message.update`
+
+Mesaj güncellendi.
+
+```json
+{
+  "event": "message.update",
+  "data": {
+    "message": {
+      "_id": "507f1f77bcf86cd799439015",
+      "content": "Updated content",
+      "edited": true
+    }
+  }
+}
+```
+
+#### `message.delete`
+
+Mesaj silindi.
+
+```json
+{
+  "event": "message.delete",
+  "data": {
+    "messageId": "507f1f77bcf86cd799439015"
+  }
+}
+```
+
+---
 
 ### Presence Events
-- `presence.update` - User status changed
-- `user.update` - User profile updated
+
+#### `presence.update`
+
+Kullanıcının online durumu değişti.
+
+```json
+{
+  "event": "presence.update",
+  "data": {
+    "userId": "507f1f77bcf86cd799439012",
+    "status": "online",
+    "customStatus": "Playing games"
+  }
+}
+```
+
+---
+
+### Typing Events
+
+#### `typing.start`
+
+Kullanıcı yazıyor.
+
+```json
+{
+  "event": "typing.start",
+  "data": {
+    "channelId": "507f1f77bcf86cd799439013",
+    "userId": "507f1f77bcf86cd799439012"
+  }
+}
+```
+
+---
 
 ### Guild Events
-- `guild.create` - Guild created/joined
-- `guild.update` - Guild settings changed
-- `guild.delete` - Guild deleted/left
-- `channel.create` - Channel created
-- `channel.update` - Channel updated
-- `channel.delete` - Channel deleted
-- `guild_member.add` - Member joined
-- `guild_member.remove` - Member left
 
-### Voice Events
-- `voice.state.update` - User voice state changed
-- `voice.server.update` - Voice server updated
+#### `guild.create`
+
+Yeni guild oluşturuldu veya kullanıcı guild'e katıldı.
+
+```json
+{
+  "event": "guild.create",
+  "data": {
+    "guild": {
+      "_id": "507f1f77bcf86cd799439011",
+      "name": "My Server"
+    }
+  }
+}
+```
+
+#### `guild.update`
+
+Guild güncellendi.
+
+#### `guild.delete`
+
+Guild silindi.
+
+---
+
+### Channel Events
+
+#### `channel.create`
+
+Yeni kanal oluşturuldu.
+
+#### `channel.update`
+
+Kanal güncellendi.
+
+#### `channel.delete`
+
+Kanal silindi.
+
+---
 
 ## HTTP Endpoints
 
-- `GET /health` - Service health check with connection stats
-- `GET /stats` - Detailed statistics
+### 🏥 Health Check
+
+#### `GET /health`
+
+```json
+{
+  "status": "ok",
+  "service": "websocket-gateway",
+  "connections": 42,
+  "guilds": 10
+}
+```
+
+---
 
 ## Architecture
 
-### Multi-Instance Support
-- Redis pub/sub for event broadcasting across gateway instances
-- Horizontal scaling with load balancer (sticky sessions recommended)
+### Event Flow
 
-### Event Sources
-- RabbitMQ consumer subscribed to `discord_events` exchange
-- All microservices publish events to RabbitMQ
-- Gateway broadcasts to WebSocket clients
+1. **Service → RabbitMQ**: Servisler event'leri RabbitMQ'ya publish eder
+2. **RabbitMQ → Gateway**: Gateway RabbitMQ'dan event'leri consume eder
+3. **Gateway → Redis**: Gateway event'i Redis Pub/Sub'a publish eder
+4. **Redis → All Gateways**: Tüm gateway instance'ları event'i alır
+5. **Gateway → Clients**: Gateway event'i WebSocket üzerinden client'lara gönderir
 
-### Connection Management
-- Heartbeat every 30 seconds
-- Automatic reconnection handling (client-side)
-- Guild-based subscriptions for efficient broadcasting
-- Multiple connections per user (mobile + desktop)
+### Scaling
 
-## Redis Keys
+- Multiple gateway instance'ları load balancer arkasında çalışabilir
+- Redis Pub/Sub ile instance'lar arası senkronizasyon
+- RabbitMQ queue'ları otomatik olarak instance'lara distribute edilir
 
-- `gateway_events` - Pub/Sub channel for inter-gateway communication
+---
 
-## Client Libraries
+## Connection Management
 
-Recommended to create client SDK with:
-- Auto-reconnection
-- Heartbeat handling
-- Event emitters
-- Connection state management
+- Her kullanıcı birden fazla WebSocket bağlantısı açabilir (farklı cihazlar)
+- Connection'lar `clients` Map'inde tutulur: `userId → Set<WebSocket>`
+- Guild subscriptions tutulur: `guildId → Set<userId>`
+- Heartbeat ile connection durumu kontrol edilir
+
+---
+
+## Notlar
+
+- WebSocket bağlantısı için JWT token authentication gereklidir
+- Heartbeat her 30 saniyede bir gönderilmelidir
+- Connection timeout: 60 saniye (heartbeat yoksa)
+- Guild subscribe olmadan o guild'in event'lerini alamazsınız
+- Event'ler JSON formatında gönderilir

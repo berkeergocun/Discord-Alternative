@@ -1,61 +1,227 @@
-# Message Service API Documentation
+# Message Service API Dokümantasyonu
 
-**Base URL**: `http://localhost:3004`  
-**Port**: 3004
+**Port:** 3004  
+**Base URL:** `http://localhost:3004`  
+**Swagger:** `http://localhost:3004/swagger`
 
-Message Service handles messages, reactions, DM channels, typing indicators, and search.
+## Genel Bilgi
+
+Message Service, mesajlaşma, reaction'lar, DM kanalları ve typing indicator gibi özellikleri yönetir. RabbitMQ ile event-driven architecture kullanır.
+
+---
 
 ## Endpoints
 
-### Messages
-- `GET /channels/:channelId/messages?limit=50&before=:messageId` - Get messages
-- `POST /channels/:channelId/messages` - Send message
-- `PATCH /channels/:channelId/messages/:messageId` - Edit message
-- `DELETE /channels/:channelId/messages/:messageId` - Delete message
-- `GET /channels/:channelId/messages/search?q=:query` - Search messages
+### 🏥 Health Check
 
-### Reactions
-- `PUT /channels/:channelId/messages/:messageId/reactions/:emoji/@me` - Add reaction
-- `DELETE /channels/:channelId/messages/:messageId/reactions/:emoji/@me` - Remove reaction
-- `GET /channels/:channelId/messages/:messageId/reactions/:emoji` - Get users who reacted
+#### `GET /health`
 
-### Typing
-- `POST /channels/:channelId/typing` - Trigger typing indicator (10s TTL)
+```json
+{ "status": "ok", "service": "message-service" }
+```
 
-### DM Channels
-- `GET /users/@me/channels` - Get user's DM channels
-- `POST /users/@me/channels` - Create DM channel
-- `DELETE /channels/:channelId` - Close DM channel
+---
 
-### Pins
-- `GET /channels/:channelId/pins` - Get pinned messages
-- `PUT /channels/:channelId/pins/:messageId` - Pin message
-- `DELETE /channels/:channelId/pins/:messageId` - Unpin message
+### 💬 Messages
 
-## MongoDB Collections
+#### `GET /channels/:channelId/messages`
 
-- `messages`: Message data with compound index (channelId, createdAt)
-- `message_attachments`: File attachments
-- `message_reactions`: User reactions with unique constraint
-- `dm_channels`: DM/Group channel metadata
-- `dm_channel_recipients`: Channel participants
+Kanaldaki mesajları getirir (pagination ile).
+
+**Query Parameters:**
+- `limit` (optional): Mesaj sayısı (default: 50)
+- `before` (optional): Bu ID'den önceki mesajlar
+
+**Response:**
+```json
+[
+  {
+    "_id": "507f1f77bcf86cd799439015",
+    "channelId": "507f1f77bcf86cd799439013",
+    "authorId": {
+      "_id": "507f1f77bcf86cd799439012",
+      "username": "johndoe",
+      "avatarUrl": "https://cdn.example.com/avatar.png"
+    },
+    "content": "Hello world!",
+    "edited": false,
+    "createdAt": "2026-02-16T12:00:00.000Z"
+  }
+]
+```
+
+#### `POST /channels/:channelId/messages`
+
+Yeni mesaj gönderir.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request:**
+```json
+{
+  "content": "Hello world!",
+  "replyToId": "507f1f77bcf86cd799439014"
+}
+```
+
+**Response:**
+```json
+{
+  "_id": "507f1f77bcf86cd799439015",
+  "channelId": "507f1f77bcf86cd799439013",
+  "authorId": "507f1f77bcf86cd799439012",
+  "content": "Hello world!",
+  "replyToId": "507f1f77bcf86cd799439014",
+  "createdAt": "2026-02-16T12:00:00.000Z"
+}
+```
+
+**Event:** `message.create` event'i RabbitMQ üzerinden broadcast edilir.
+
+#### `PATCH /channels/:channelId/messages/:messageId`
+
+Mesajı düzenler.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request:**
+```json
+{
+  "content": "Updated message content"
+}
+```
+
+**Event:** `message.update`
+
+#### `DELETE /channels/:channelId/messages/:messageId`
+
+Mesajı siler.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Event:** `message.delete`
+
+---
+
+### 😀 Reactions
+
+#### `PUT /channels/:channelId/messages/:messageId/reactions/:emoji/@me`
+
+Mesaja reaction ekler.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Parameters:**
+- `emoji`: URL-encoded emoji (örn: `%F0%9F%91%8D` for 👍)
+
+**Response:**
+```json
+{
+  "success": true
+}
+```
+
+#### `DELETE /channels/:channelId/messages/:messageId/reactions/:emoji/@me`
+
+Reaction'ı kaldırır.
+
+---
+
+### ✍️ Typing Indicator
+
+#### `POST /channels/:channelId/typing`
+
+Typing indicator başlatır (10 saniye geçerli).
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Event:** `typing.start` event'i broadcast edilir.
+
+---
+
+### 📨 DM Channels
+
+#### `GET /users/@me/channels`
+
+Kullanıcının DM kanallarını getirir.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response:**
+```json
+[
+  {
+    "_id": "507f1f77bcf86cd799439016",
+    "type": "dm",
+    "createdAt": "2026-02-15T10:00:00.000Z"
+  }
+]
+```
+
+#### `POST /users/@me/channels`
+
+Yeni DM kanalı oluşturur.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request:**
+```json
+{
+  "recipientId": "507f1f77bcf86cd799439017"
+}
+```
+
+**Response:**
+```json
+{
+  "_id": "507f1f77bcf86cd799439016",
+  "type": "dm"
+}
+```
+
+---
+
+### 🔍 Search
+
+#### `GET /channels/:channelId/messages/search`
+
+Kanaldaki mesajlarda arama yapar.
+
+**Query Parameters:**
+- `q`: Arama terimi
+
+**Response:**
+```json
+[
+  {
+    "_id": "507f1f77bcf86cd799439015",
+    "content": "Search result message",
+    "authorId": "507f1f77bcf86cd799439012"
+  }
+]
+```
+
+**Not:** Production'da Elasticsearch entegrasyonu önerilir.
+
+---
 
 ## RabbitMQ Events
 
-Published to `discord_events` exchange:
-- `message.create` - New message sent
-- `message.update` - Message edited
-- `message.delete` - Message deleted
-- `typing.start` - User started typing
+Message Service aşağıdaki event'leri publish eder:
 
-## Redis Keys
+| Event | Açıklama | Data |
+|-------|----------|------|
+| `message.create` | Yeni mesaj | `{ channelId, message }` |
+| `message.update` | Mesaj güncelleme | `{ message }` |
+| `message.delete` | Mesaj silme | `{ messageId }` |
+| `typing.start` | Yazıyor göstergesi | `{ channelId, userId }` |
 
-- `typing:{channelId}:{userId}` - Typing indicator (TTL: 10s)
-- `message_cache:{messageId}` - Cached message data
+---
 
-## Elasticsearch Integration
+## Notlar
 
-For production, index messages in Elasticsearch:
-- Full-text search across all messages
-- Advanced filters (author, date range, mentions)
-- Fuzzy matching and autocomplete
+- Mesajlar MongoDB'de saklanır
+- Typing indicator Redis'te 10 saniye saklanır
+- RabbitMQ ile gerçek zamanlı event broadcasting
+- Pagination reverse chronological order (en yeni önce)
+- Reply mesajlar `replyToId` ile referans edilir

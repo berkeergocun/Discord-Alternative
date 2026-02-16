@@ -1,56 +1,238 @@
-# Guild Service API Documentation
+# Guild Service API Dokümantasyonu
 
-**Base URL**: `http://localhost:3003`  
-**Port**: 3003
+**Port:** 3003  
+**Base URL:** `http://localhost:3003`  
+**Swagger:** `http://localhost:3003/swagger`
 
-Guild Service manages servers (guilds), channels, roles, members, and invites.
+## Genel Bilgi
+
+Guild Service, sunucular (guilds), kanallar, roller ve davetler gibi sunucu yönetimi özelliklerini sağlar.
+
+---
 
 ## Endpoints
 
-### Guilds
-- `GET /guilds` - Get user's guilds
-- `POST /guilds` - Create guild
-- `GET /guilds/:guildId` - Get guild details
-- `PATCH /guilds/:guildId` - Update guild
-- `DELETE /guilds/:guildId` - Delete guild
+### 🏥 Health Check
 
-### Channels
-- `GET /guilds/:guildId/channels` - List channels
-- `POST /guilds/:guildId/channels` - Create channel
-- `PATCH /guilds/:guildId/channels/:channelId` - Update channel
-- `DELETE /guilds/:guildId/channels/:channelId` - Delete channel
+#### `GET /health`
 
-### Roles
-- `GET /guilds/:guildId/roles` - List roles
-- `POST /guilds/:guildId/roles` - Create role
-- `PATCH /guilds/:guildId/roles/:roleId` - Update role
-- `DELETE /guilds/:guildId/roles/:roleId` - Delete role
+```json
+{ "status": "ok", "service": "guild-service" }
+```
 
-### Members
-- `GET /guilds/:guildId/members` - List members
-- `POST /guilds/:guildId/members` - Add member
-- `DELETE /guilds/:guildId/members/:userId` - Remove member
+---
 
-### Invites
-- `GET /guilds/:guildId/invites` - List invites
-- `POST /guilds/:guildId/invites` - Create invite
-- `POST /invites/:code` - Use invite to join guild
-- `DELETE /guilds/:guildId/invites/:code` - Delete invite
+### 🏰 Guild Management
 
-## MongoDB Collections
+#### `GET /guilds`
 
-- `guilds`: Guild data
-- `channels`: Channel data
-- `roles`: Role data with permissions (bitfield)
-- `guild_members`: User memberships
-- `invites`: Invite codes
+Kullanıcının üyesi olduğu tüm sunucuları getirir.
 
-## Permissions System
+**Headers:** `Authorization: Bearer <token>`
 
-Permissions stored as BigInt bitfield. Example permissions:
-- CREATE_INSTANT_INVITE = 1 << 0
-- KICK_MEMBERS = 1 << 1
-- BAN_MEMBERS = 1 << 2
-- ADMINISTRATOR = 1 << 3
-- MANAGE_CHANNELS = 1 << 4
-- MANAGE_GUILD = 1 << 5
+**Response:**
+```json
+[
+  {
+    "_id": "507f1f77bcf86cd799439011",
+    "name": "My Server",
+    "description": "Cool server",
+    "ownerId": "507f1f77bcf86cd799439012",
+    "iconUrl": "https://cdn.example.com/icon.png"
+  }
+]
+```
+
+#### `POST /guilds`
+
+Yeni sunucu oluşturur.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request:**
+```json
+{
+  "name": "New Server",
+  "description": "Server description"
+}
+```
+
+**Response:**
+```json
+{
+  "_id": "507f1f77bcf86cd799439011",
+  "name": "New Server",
+  "description": "Server description",
+  "ownerId": "507f1f77bcf86cd799439012"
+}
+```
+
+#### `GET /guilds/:guildId`
+
+Belirli bir sunucunun detaylarını getirir.
+
+#### `PATCH /guilds/:guildId`
+
+Sunucu ayarlarını günceller.
+
+**Request:**
+```json
+{
+  "name": "Updated Name",
+  "description": "Updated description"
+}
+```
+
+#### `DELETE /guilds/:guildId`
+
+Sunucuyu siler.
+
+---
+
+### 📺 Channel Management
+
+#### `GET /guilds/:guildId/channels`
+
+Sunucudaki tüm kanalları getirir.
+
+**Response:**
+```json
+[
+  {
+    "_id": "507f1f77bcf86cd799439013",
+    "guildId": "507f1f77bcf86cd799439011",
+    "name": "general",
+    "type": "text",
+    "position": 0
+  }
+]
+```
+
+#### `POST /guilds/:guildId/channels`
+
+Yeni kanal oluşturur.
+
+**Request:**
+```json
+{
+  "name": "new-channel",
+  "type": "text"
+}
+```
+
+**Type Options:**
+- `text`: Metin kanalı
+- `voice`: Ses kanalı
+- `category`: Kategori
+
+#### `PATCH /guilds/:guildId/channels/:channelId`
+
+Kanal ayarlarını günceller.
+
+**Request:**
+```json
+{
+  "name": "updated-channel",
+  "topic": "Channel topic"
+}
+```
+
+#### `DELETE /guilds/:guildId/channels/:channelId`
+
+Kanalı siler.
+
+---
+
+### 🎭 Role Management
+
+#### `GET /guilds/:guildId/roles`
+
+Sunucudaki tüm rolleri getirir.
+
+**Response:**
+```json
+[
+  {
+    "_id": "507f1f77bcf86cd799439014",
+    "guildId": "507f1f77bcf86cd799439011",
+    "name": "Admin",
+    "color": "#FF0000",
+    "position": 1,
+    "permissions": ["ADMINISTRATOR"]
+  }
+]
+```
+
+#### `POST /guilds/:guildId/roles`
+
+Yeni rol oluşturur.
+
+**Request:**
+```json
+{
+  "name": "Moderator",
+  "color": "#00FF00"
+}
+```
+
+---
+
+### 👥 Member Management
+
+#### `GET /guilds/:guildId/members`
+
+Sunucu üyelerini getirir.
+
+---
+
+### 🎫 Invite Management
+
+#### `GET /guilds/:guildId/invites`
+
+Sunucunun davet linklerini getirir.
+
+#### `POST /guilds/:guildId/invites`
+
+Yeni davet linki oluşturur.
+
+**Request:**
+```json
+{
+  "channelId": "507f1f77bcf86cd799439013",
+  "maxUses": 10
+}
+```
+
+**Response:**
+```json
+{
+  "code": "abc123",
+  "guildId": "507f1f77bcf86cd799439011",
+  "channelId": "507f1f77bcf86cd799439013",
+  "maxUses": 10,
+  "uses": 0
+}
+```
+
+#### `POST /invites/:code`
+
+Davet kodunu kullanarak sunucuya katılır.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response:**
+```json
+{
+  "success": true,
+  "guildId": "507f1f77bcf86cd799439011"
+}
+```
+
+---
+
+## Notlar
+
+- Tüm endpoint'ler authentication gerektirir
+- Kanal tipleri: text, voice, category
+- Roller hiyerarşik pozisyona göre sıralanır
+- Davetlere kullanım limiti konulabilir

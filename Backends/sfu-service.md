@@ -1,137 +1,249 @@
-# SFU Service API Documentation
+# SFU Service API Dokümantasyonu
 
-**Base URL**: `http://localhost:3006`  
-**Port**: 3006
+**Port:** 3007  
+**Base URL:** `http://localhost:3007`  
+**Swagger:** `http://localhost:3007/swagger`
 
-SFU (Selective Forwarding Unit) Service handles real-time voice and video streaming using Mediasoup WebRTC SFU.
+## Genel Bilgi
 
-## Architecture
+SFU (Selective Forwarding Unit) Service, sesli ve görüntülü sohbet özelliklerini yönetir. WebRTC tabanlı medya streaming sağlar.
 
-SFU Service uses **Mediasoup** for WebRTC media routing:
-- Multiple workers for load distribution
-- One router per voice channel
-- WebRTC transports for each participant
-- Producers for sending media (audio/video)
-- Consumers for receiving media from others
-
-## Connection Flow
-
-1. **Join Channel**: `POST /channels/:channelId/voice/join` - Get RTP capabilities
-2. **Create Transports**: `POST /channels/:channelId/voice/transport` - Create send/recv transports
-3. **Connect Transport**: `POST /transports/:transportId/connect` - Connect with DTLS parameters
-4. **Produce**: `POST /transports/:transportId/produce` - Start sending audio/video
-5. **Consume**: `POST /channels/:channelId/voice/consume` - Receive media from other participants
-6. **Leave**: `DELETE /channels/:channelId/voice/@me` - Disconnect from channel
+---
 
 ## Endpoints
 
-### Voice Channel
-- `GET /channels/:channelId/voice/capabilities` - Get router RTP capabilities
-- `POST /channels/:channelId/voice/join` - Join voice channel
-- `DELETE /channels/:channelId/voice/@me` - Leave voice channel
-- `GET /channels/:channelId/voice/participants` - Get active participants
+### 🏥 Health Check
 
-### Transport Management
-- `POST /channels/:channelId/voice/transport` - Create WebRTC transport
-- `POST /transports/:transportId/connect` - Connect transport with DTLS
-- `POST /transports/:transportId/produce` - Start producing media (audio/video)
-- `POST /channels/:channelId/voice/consume` - Consume media from producer
+#### `GET /health`
 
-### Voice State
-- `PATCH /channels/:channelId/voice/@me` - Update voice state (mute, video, screenshare)
-
-## Request/Response Examples
-
-### Join Voice Channel
 ```json
-POST /channels/:channelId/voice/join
-Authorization: Bearer <token>
-
-Response:
 {
-  "sessionId": "session_id",
-  "rtpCapabilities": { /* Router RTP capabilities */ }
+  "status": "ok",
+  "service": "sfu-service"
 }
 ```
 
-### Create Transport
-```json
-POST /channels/:channelId/voice/transport
-Authorization: Bearer <token>
-{
-  "producing": true,
-  "consuming": false
-}
+---
 
-Response:
+### 🎙️ Voice Session Management
+
+#### `POST /channels/:channelId/voice/join`
+
+Sesli kanala katılır ve session oluşturur.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response:**
+```json
 {
-  "id": "transport_id",
-  "iceParameters": { /* ICE params */ },
-  "iceCandidates": [ /* ICE candidates */ ],
-  "dtlsParameters": { /* DTLS params */ }
+  "sessionId": "507f1f77bcf86cd799439018",
+  "success": true
 }
 ```
 
-### Update Voice State
+**İşlem:**
+- Eğer kanal için session yoksa yeni session oluşturur
+- Kullanıcıyı participant olarak ekler
+- Session ID döner
+
+---
+
+#### `PATCH /channels/:channelId/voice/@me`
+
+Kendi ses/video ayarlarını günceller.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
 ```json
-PATCH /channels/:channelId/voice/@me
-Authorization: Bearer <token>
 {
-  "muted": true,
-  "video": false,
+  "muted": false,
+  "deafened": false,
+  "video": true,
   "screenshare": false
 }
 ```
 
-## MongoDB Collections
+**Fields (Tümü Opsiyonel):**
+- `muted`: Mikrofon kapalı mı?
+- `deafened`: Ses kapalı mı?
+- `video`: Kamera açık mı?
+- `screenshare`: Ekran paylaşımı aktif mi?
 
-- `voice_sessions`: Active voice channel sessions with router IDs
-- `voice_participants`: Users in voice channels with media state
-
-## Configuration
-
-### Environment Variables
-- `ANNOUNCED_IP`: Public IP for WebRTC (required for external access)
-- `RTC_MIN_PORT`: Min port for RTP (default: 10000)
-- `RTC_MAX_PORT`: Max port for RTP (default: 20000)
-
-### Mediasoup Codecs
-- **Audio**: Opus @ 48kHz, 2 channels
-- **Video**: VP8 @ 90kHz (H.264 optional)
-
-## Scaling Considerations
-
-1. **Multiple Workers**: Distribute load across CPU cores
-2. **Horizontal Scaling**: Run multiple SFU instances with load balancer
-3. **Redis State**: Store session state in Redis for multi-instance coordination
-4. **Port Ranges**: Configure sufficient RTC port ranges (1000+ ports per worker)
-
-## Client Implementation
-
-Use `mediasoup-client` library:
-```javascript
-import { Device } from 'mediasoup-client';
-
-const device = new Device();
-const rtpCapabilities = await fetch('/channels/:id/voice/capabilities').then(r => r.json());
-await device.load({ routerRtpCapabilities: rtpCapabilities });
-
-// Create send transport
-const transport = await fetch('/channels/:id/voice/transport', {
-  method: 'POST',
-  body: JSON.stringify({ producing: true, consuming: false })
-}).then(r => r.json());
-
-const sendTransport = device.createSendTransport(transport);
-// ... connect and produce
+**Response:**
+```json
+{
+  "success": true
+}
 ```
 
-## Features
+---
 
-- ✅ Voice chat (Opus codec)
-- ✅ Video chat (VP8 codec)
-- ✅ Screen sharing
-- ✅ Mute/Unmute
-- ✅ Video on/off
-- ✅ Multiple participants per channel
-- ✅ Low latency WebRTC streaming
+#### `DELETE /channels/:channelId/voice/@me`
+
+Sesli kanaldan ayrılır.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response:**
+```json
+{
+  "success": true
+}
+```
+
+**İşlem:**
+- Kullanıcıyı participant listesinden çıkarır
+- WebRTC connection'ları temizler
+
+---
+
+#### `GET /channels/:channelId/voice/participants`
+
+Sesli kanaldaki katılımcıları listeler.
+
+**Response:**
+```json
+[
+  {
+    "_id": "507f1f77bcf86cd799439019",
+    "sessionId": "507f1f77bcf86cd799439018",
+    "userId": {
+      "_id": "507f1f77bcf86cd799439012",
+      "username": "johndoe",
+      "avatarUrl": "https://cdn.example.com/avatar.png"
+    },
+    "muted": false,
+    "deafened": false,
+    "video": true,
+    "screenshare": false
+  }
+]
+```
+
+---
+
+## WebRTC Signaling
+
+### Connection Flow
+
+1. **Join**: `POST /channels/:channelId/voice/join` - Session oluştur
+2. **Get Participants**: `GET /channels/:channelId/voice/participants` - Diğer kullanıcıları al
+3. **WebRTC Offer**: Client WebRTC offer oluşturur
+4. **Signal**: WebSocket üzerinden signaling mesajları değişilir
+5. **ICE Candidates**: ICE candidate'ler exchange edilir
+6. **Media Stream**: Peer-to-peer veya SFU üzerinden medya stream'i başlar
+
+### Signaling Events (WebSocket)
+
+#### `voice.user_joined`
+
+```json
+{
+  "event": "voice.user_joined",
+  "data": {
+    "channelId": "507f1f77bcf86cd799439013",
+    "userId": "507f1f77bcf86cd799439012",
+    "participant": {
+      "muted": false,
+      "video": false
+    }
+  }
+}
+```
+
+#### `voice.user_left`
+
+```json
+{
+  "event": "voice.user_left",
+  "data": {
+    "channelId": "507f1f77bcf86cd799439013",
+    "userId": "507f1f77bcf86cd799439012"
+  }
+}
+```
+
+#### `voice.state_update`
+
+```json
+{
+  "event": "voice.state_update",
+  "data": {
+    "channelId": "507f1f77bcf86cd799439013",
+    "userId": "507f1f77bcf86cd799439012",
+    "muted": true,
+    "video": false
+  }
+}
+```
+
+---
+
+## Data Models
+
+### VoiceSession
+```typescript
+{
+  _id: ObjectId,
+  channelId: ObjectId,
+  guildId: ObjectId,
+  routerId: string,       // SFU router ID
+  createdAt: Date
+}
+```
+
+### VoiceParticipant
+```typescript
+{
+  _id: ObjectId,
+  sessionId: ObjectId,
+  userId: ObjectId,
+  muted: boolean,
+  deafened: boolean,
+  video: boolean,
+  screenshare: boolean,
+  joinedAt: Date
+}
+```
+
+---
+
+## Architecture
+
+### SFU (Selective Forwarding Unit)
+
+- **Client → SFU**: Her client medya stream'ini SFU'ya gönderir
+- **SFU → Clients**: SFU stream'i diğer participant'lara forward eder
+- **Avantajlar**: 
+  - Düşük client-side CPU kullanımı
+  - Bandwidth optimizasyonu
+  - Merkezi kontrol
+
+### Codec Support
+
+- **Audio**: Opus
+- **Video**: VP8, VP9, H.264
+- **Screen Share**: VP8 (high resolution)
+
+---
+
+## Notlar
+
+- WebRTC signaling WebSocket Gateway üzerinden yapılır
+- Medya stream'leri peer-to-peer veya SFU üzerinden
+- Session her kanal için benzersizdir
+- Participant durumu real-time olarak broadcast edilir
+- Production'da TURN server gereklidir (NAT traversal için)
+- Maksimum participant sayısı SFU kapasitesine bağlıdır
+
+---
+
+## Future Enhancements
+
+- [ ] Screen sharing ile simulcast
+- [ ] Recording support
+- [ ] Noise suppression
+- [ ] Echo cancellation
+- [ ] Video quality adaptation (bitrate)
+- [ ] E2E encryption
