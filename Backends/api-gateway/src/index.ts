@@ -2,7 +2,7 @@ import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { swagger } from '@elysiajs/swagger';
 
-const PORT = parseInt(process.env.API_GATEWAY_PORT || '3000');
+const PORT = parseInt(process.env.API_GATEWAY_PORT || '3100');
 
 const services = [
   { name: 'Auth Service', port: 3001, path: '/auth', description: 'Authentication & Authorization' },
