@@ -93,3 +93,24 @@
   </div>
 </template>
 
+<script setup lang="ts">
+const props = withDefaults(defineProps<{
+  title?: string
+  description?: string
+  type?: 'text' | 'voice' | 'dm' | 'group'
+  showMemberList?: boolean
+  showUserProfile?: boolean
+  showGroupProfile?: boolean
+}>(), {
+  title: 'Kanal',
+  type: 'text',
+})
+
+const emit = defineEmits<{
+  pins: []
+  threads: []
+  members: []
+  'toggle-profile': []
+  search: []
+}>()
+</script>

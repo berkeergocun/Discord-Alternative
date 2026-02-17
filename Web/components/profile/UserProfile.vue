@@ -133,7 +133,53 @@
   </div>
 </template>
 
+<script setup lang="ts">
+const props = defineProps<{
+  user: {
+    id?: string
+    username: string
+    displayName?: string
+    avatar?: string
+    banner?: string
+    bannerColor?: string
+    status?: 'online' | 'idle' | 'dnd' | 'offline'
+    customStatus?: string
+    createdAt?: string | Date
+    badges?: string[]
+    note?: string
+  }
+}>()
 
+const emit = defineEmits<{
+  call: []
+  'video-call': []
+  'add-friend': []
+  block: []
+  'remove-friend': []
+}>()
+
+const localNote = ref(props.user.note || '')
+
+function saveNote() {
+  console.log('Not kaydedildi:', localNote.value)
+}
+
+function formatDate(date?: string | Date): string {
+  if (!date) return 'Bilinmiyor'
+  return new Date(date).toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
+function getBadgeIcon(badge: string): string {
+  const icons: Record<string, string> = {
+    'early-supporter': '🎉',
+    verified: '✅',
+    developer: '🛠️',
+    premium: '👑',
+    staff: '⚡',
+  }
+  return icons[badge] || '🏅'
+}
+</script>
 <style scoped>
 .custom-scrollbar::-webkit-scrollbar {
   width: 8px;

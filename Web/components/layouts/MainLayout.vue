@@ -5,14 +5,16 @@
     
     <!-- Sidebar -->
     <Sidebar>
-      <!-- Content slot for sidebar items -->
-      <slot name="sidebar"></slot>
+      <slot name="sidebar" />
     </Sidebar>
     
     <!-- Main Content Area -->
     <div class="flex-1 flex min-w-0 relative">
-      <!-- Main content slot -->
-      <slot></slot>
+      <!-- Main content -->
+      <slot name="content" />
+      
+      <!-- Right panel (user/group profile) -->
+      <slot name="right" />
     </div>
   </div>
 </template>

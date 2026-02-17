@@ -26,3 +26,22 @@
   </div>
 </template>
 
+<script setup lang="ts">
+const emit = defineEmits<{ loaded: [] }>()
+
+const loadingText = ref('Yükleniyor...')
+const texts = ['Bağlanıyor...', 'Sunucular yükleniyor...', 'Neredeyse hazır...', 'Hoş geldin!']
+let idx = 0
+
+onMounted(() => {
+  const interval = setInterval(() => {
+    idx++
+    if (idx < texts.length) {
+      loadingText.value = texts[idx]
+    } else {
+      clearInterval(interval)
+      setTimeout(() => emit('loaded'), 300)
+    }
+  }, 500)
+})
+</script>

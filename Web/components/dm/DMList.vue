@@ -30,7 +30,7 @@
             :key="dm.id"
             :dm="dm"
             :isActive="activeDmId === dm.id"
-            @click="emit('dm-select', dm.id)"
+            @click="handleDmSelect(dm.id)"
           />
         </div>
       </div>
@@ -41,3 +41,64 @@
   </Suspense>
 </template>
 
+<script setup lang="ts">
+const emit = defineEmits<{
+  friends: []
+  'dm-select': [id: string]
+}>()
+
+const activeDmId = ref<string | null>(null)
+
+// Statik DM listesi (sonra backend'den gelecek)
+const dms = ref([
+  {
+    id: '1',
+    type: 'dm' as const,
+    name: 'Ali Yılmaz',
+    status: 'online' as const,
+    lastMessage: 'Merhaba! Nasılsın?',
+    timestamp: new Date(Date.now() - 5 * 60 * 1000),
+    unreadCount: 2,
+  },
+  {
+    id: '2',
+    type: 'dm' as const,
+    name: 'Ayşe Kaya',
+    status: 'idle' as const,
+    lastMessage: 'Proje hazır mı?',
+    timestamp: new Date(Date.now() - 30 * 60 * 1000),
+    unreadCount: 0,
+  },
+  {
+    id: '3',
+    type: 'dm' as const,
+    name: 'Mehmet Demir',
+    status: 'dnd' as const,
+    lastMessage: 'Toplantıya katılamayacağım.',
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
+    unreadCount: 0,
+  },
+  {
+    id: '4',
+    type: 'group' as const,
+    name: 'Proje Grubu',
+    lastMessage: 'Yeni güncelleme geldi!',
+    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    unreadCount: 5,
+  },
+  {
+    id: '5',
+    type: 'dm' as const,
+    name: 'Zeynep Arslan',
+    status: 'offline' as const,
+    lastMessage: 'Yarın görüşürüz.',
+    timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    unreadCount: 0,
+  },
+])
+
+function handleDmSelect(id: string) {
+  activeDmId.value = id
+  emit('dm-select', id)
+}
+</script>

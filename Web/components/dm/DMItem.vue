@@ -57,3 +57,43 @@
   </div>
 </template>
 
+<script setup lang="ts">
+import { cn } from '~/lib/utils'
+
+interface DM {
+  id: string
+  type: 'dm' | 'group'
+  name?: string
+  avatar?: string
+  status?: 'online' | 'idle' | 'dnd' | 'offline'
+  lastMessage?: string
+  timestamp?: Date | string
+  unreadCount?: number
+}
+
+const props = defineProps<{
+  dm: DM
+  isActive?: boolean
+}>()
+
+const emit = defineEmits<{
+  click: []
+}>()
+
+const displayName = computed(() => props.dm.name || 'Bilinmeyen Kullanıcı')
+
+function formatTimestamp(timestamp: Date | string | undefined): string {
+  if (!timestamp) return ''
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const minutes = Math.floor(diff / 60000)
+  const hours = Math.floor(diff / 3600000)
+  const days = Math.floor(diff / 86400000)
+
+  if (minutes < 60) return minutes <= 1 ? 'Şimdi' : `${minutes}dk`
+  if (hours < 24) return `${hours}s`
+  if (days < 7) return `${days}g`
+  return date.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' })
+}
+</script>

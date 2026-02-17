@@ -116,3 +116,30 @@
   </div>
 </template>
 
+<script setup lang="ts">
+import { cn } from '~/lib/utils'
+
+const props = withDefaults(defineProps<{
+  message: {
+    id: string
+    content: string
+    timestamp: Date
+    replyTo?: { author: string; content: string }
+    attachments?: any[]
+    reactions?: { emoji: string; count: number; reacted: boolean }[]
+    edited?: boolean
+  }
+  showTimestamp?: boolean
+}>(), {
+  showTimestamp: false,
+})
+
+const emit = defineEmits<{
+  reply: []
+  react: [emoji: string]
+  edit: []
+  delete: []
+}>()
+
+const isHovered = ref(false)
+</script>

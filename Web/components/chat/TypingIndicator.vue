@@ -16,3 +16,15 @@
   </div>
 </template>
 
+<script setup lang="ts">
+const props = defineProps<{
+  users: string[]
+}>()
+
+const formattedUsers = computed(() => {
+  if (!props.users.length) return ''
+  if (props.users.length === 1) return props.users[0]
+  if (props.users.length === 2) return `${props.users[0]} ve ${props.users[1]}`
+  return `${props.users.slice(0, -1).join(', ')} ve ${props.users[props.users.length - 1]}`
+})
+</script>

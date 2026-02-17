@@ -79,3 +79,57 @@
   </div>
 </template>
 
+<script setup lang="ts">
+import { cn } from '~/lib/utils'
+
+const props = withDefaults(defineProps<{
+  placeholder?: string
+  replyTo?: { author: { username: string }, content: string } | null
+}>(), {
+  placeholder: 'Mesaj yaz...',
+  replyTo: null,
+})
+
+const emit = defineEmits<{
+  send: [message: string]
+  'cancel-reply': []
+  typing: []
+}>()
+
+const message = ref('')
+const inputRef = ref<HTMLTextAreaElement | null>(null)
+const fileInputRef = ref<HTMLInputElement | null>(null)
+
+function handleInput() {
+  if (!inputRef.value) return
+  inputRef.value.style.height = 'auto'
+  inputRef.value.style.height = `${inputRef.value.scrollHeight}px`
+  emit('typing')
+}
+
+function handleSend() {
+  const text = message.value.trim()
+  if (!text) return
+  emit('send', text)
+  message.value = ''
+  if (inputRef.value) inputRef.value.style.height = 'auto'
+}
+
+function handleNewLine() {
+  message.value += '\n'
+}
+
+function handleFileSelect(e: Event) {
+  const target = e.target as HTMLInputElement
+  console.log('Files selected:', target.files)
+}
+
+function openFilePicker() {
+  fileInputRef.value?.click()
+}
+
+function openEmojiPicker() {
+  console.log('Emoji picker açıldı')
+}
+</script>
+

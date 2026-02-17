@@ -40,3 +40,38 @@
   </div>
 </template>
 
+<script setup lang="ts">
+interface Message {
+  id: string
+  content: string
+  timestamp: Date
+  replyTo?: { author: string; content: string }
+  attachments?: any[]
+  reactions?: { emoji: string; count: number; reacted: boolean }[]
+  edited?: boolean
+}
+
+interface Author {
+  id: string
+  username: string
+  displayName?: string
+  avatar?: string
+  bot?: boolean
+}
+
+const props = defineProps<{
+  messages: Message[]
+  author: Author
+}>()
+
+const emit = defineEmits<{
+  reply: [messageId: string]
+  react: [data: { messageId: string; emoji: string }]
+  edit: [messageId: string]
+  delete: [messageId: string]
+}>()
+
+function formatTimestamp(timestamp: Date): string {
+  return new Date(timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+}
+</script>
