@@ -28,6 +28,7 @@ export default {
         'text-secondary': '#B5BAC1',
         'text-muted': '#80848E',
         'text-link': '#00AFF4',
+        'link': '#00AFF4',
         // Status colors
         'status-online': '#23A559',
         'status-idle': '#F0B232',

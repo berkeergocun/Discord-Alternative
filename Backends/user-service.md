@@ -1,7 +1,10 @@
 # User Service API Documentation
 
-**Base URL**: `http://localhost:3002`  
+**Base URL**: `http://localhost/api/v1/users`  
+**Direct URL**: `http://localhost:3002`  
 **Port**: 3002
+
+> **Not:** Tüm istekler Traefik API Gateway üzerinden `/api/v1/users` prefix'i ile yapılır.
 
 User Service, kullanıcı profil yönetimi, arkadaşlık sistemi ve presence tracking'den sorumludur.
 
@@ -9,8 +12,11 @@ User Service, kullanıcı profil yönetimi, arkadaşlık sistemi ve presence tra
 
 ### Profile Management
 
-#### GET `/users/:userId` - Get user profile
-#### PATCH `/users/@me` - Update own profile
+#### GET `/api/v1/users/:userId` - Get user profile
+**Direct:** `GET /users/:userId`
+
+#### PATCH `/api/v1/users/@me` - Update own profile
+**Direct:** `PATCH /users/@me`
 
 **Body:**
 ```json
@@ -23,10 +29,17 @@ User Service, kullanıcı profil yönetimi, arkadaşlık sistemi ve presence tra
 
 ### Friend Management
 
-#### GET `/users/@me/friends` - Get friends list
-#### POST `/users/:userId/friend-request` - Send friend request
-#### PUT `/users/@me/friend-requests/:requestId` - Accept friend request
-#### DELETE `/users/@me/friends/:userId` - Remove friend
+#### GET `/api/v1/users/@me/friends` - Get friends list
+**Direct:** `GET /users/@me/friends`
+
+#### POST `/api/v1/users/:userId/friend-request` - Send friend request
+**Direct:** `POST /users/:userId/friend-request`
+
+#### PUT `/api/v1/users/@me/friend-requests/:requestId` - Accept friend request
+**Direct:** `PUT /users/@me/friend-requests/:requestId`
+
+#### DELETE `/api/v1/users/@me/friends/:userId` - Remove friend
+**Direct:** `DELETE /users/@me/friends/:userId`
 
 ### Blocking
 

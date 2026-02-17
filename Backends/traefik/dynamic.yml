@@ -2,75 +2,76 @@
 
 http:
   routers:
-    # API Gateway - Main Entry
-    api-gateway:
-      rule: "Host(`localhost`) && PathPrefix(`/api`)"
-      service: api-gateway
-      entryPoints:
-        - web
-      middlewares:
-        - strip-api-prefix
-
-    # Auth Service
+    # Auth Service (API v1)
     auth-service:
-      rule: "Host(`localhost`) && PathPrefix(`/auth`)"
+      rule: "Host(`localhost`) && PathPrefix(`/api/v1/auth`)"
       service: auth-service
       entryPoints:
         - web
       middlewares:
-        - strip-auth-prefix
+        - strip-api-v1-prefix
 
-    # User Service
+    # User Service (API v1)
     user-service:
-      rule: "Host(`localhost`) && PathPrefix(`/users`)"
+      rule: "Host(`localhost`) && PathPrefix(`/api/v1/users`)"
       service: user-service
       entryPoints:
         - web
       middlewares:
-        - strip-users-prefix
+        - strip-api-v1-prefix
 
-    # Guild Service
+    # Guild Service (API v1)
     guild-service:
-      rule: "Host(`localhost`) && PathPrefix(`/guilds`)"
+      rule: "Host(`localhost`) && PathPrefix(`/api/v1/guilds`)"
       service: guild-service
       entryPoints:
         - web
       middlewares:
-        - strip-guilds-prefix
+        - strip-api-v1-prefix
 
-    # Message Service
+    # Message Service (API v1)
     message-service:
-      rule: "Host(`localhost`) && PathPrefix(`/messages`)"
+      rule: "Host(`localhost`) && PathPrefix(`/api/v1/messages`)"
       service: message-service
       entryPoints:
         - web
       middlewares:
-        - strip-messages-prefix
+        - strip-api-v1-prefix
 
-    # WebSocket Gateway
+    # Channels endpoint (API v1)
+    channels-service:
+      rule: "Host(`localhost`) && PathPrefix(`/api/v1/channels`)"
+      service: message-service
+      entryPoints:
+        - web
+      middlewares:
+        - strip-api-v1-prefix
+
+    # WebSocket Gateway (API v1)
     websocket-gateway:
-      rule: "Host(`localhost`) && PathPrefix(`/ws`)"
+      rule: "Host(`localhost`) && PathPrefix(`/api/v1/ws`)"
       service: websocket-gateway
       entryPoints:
         - web
       middlewares:
-        - strip-ws-prefix
+        - strip-api-v1-prefix
 
-    # SFU Service
+    # SFU Service (API v1)
     sfu-service:
-      rule: "Host(`localhost`) && PathPrefix(`/sfu`)"
+      rule: "Host(`localhost`) && PathPrefix(`/api/v1/sfu`)"
       service: sfu-service
       entryPoints:
         - web
       middlewares:
-        - strip-sfu-prefix
+        - strip-api-v1-prefix
 
-    # Swagger Documentation
-    swagger:
-      rule: "Host(`localhost`) && PathPrefix(`/swagger`)"
-      service: api-gateway
+    # Frontend (Nuxt) - Catch all other routes
+    frontend:
+      rule: "Host(`localhost`)"
+      service: frontend
       entryPoints:
         - web
+      priority: 1
 
   services:
     # API Gateway Service
@@ -143,42 +144,18 @@ http:
           interval: 30s
           timeout: 5s
 
+    # Frontend (Nuxt)
+    frontend:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3000"
+
   middlewares:
-    # Strip prefix middlewares
-    strip-api-prefix:
-      stripPrefix:
-        prefixes:
-          - "/api"
-    
-    strip-auth-prefix:
-      stripPrefix:
-        prefixes:
-          - "/auth"
-    
-    strip-users-prefix:
-      stripPrefix:
-        prefixes:
-          - "/users"
-    
-    strip-guilds-prefix:
-      stripPrefix:
-        prefixes:
-          - "/guilds"
-    
-    strip-messages-prefix:
-      stripPrefix:
-        prefixes:
-          - "/messages"
-    
-    strip-ws-prefix:
-      stripPrefix:
-        prefixes:
-          - "/ws"
-    
-    strip-sfu-prefix:
-      stripPrefix:
-        prefixes:
-          - "/sfu"
+    # Strip /api/v1 prefix for backend services  
+    strip-api-v1-prefix:
+      stripPrefixRegex:
+        regex:
+          - "^/api/v1"
 
     # CORS Middleware
     cors:

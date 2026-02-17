@@ -1,8 +1,11 @@
 # Message Service API Dokümantasyonu
 
 **Port:** 3004  
-**Base URL:** `http://localhost:3004`  
+**Base URL:** `http://localhost/api/v1`  
+**Direct URL:** `http://localhost:3004`  
 **Swagger:** `http://localhost:3004/swagger`
+
+> **Not:** Message ve Channel endpoint'leri Traefik üzerinden `/api/v1/messages` ve `/api/v1/channels` prefix'leri ile erişilir.
 
 ## Genel Bilgi
 
@@ -24,9 +27,11 @@ Message Service, mesajlaşma, reaction'lar, DM kanalları ve typing indicator gi
 
 ### 💬 Messages
 
-#### `GET /channels/:channelId/messages`
+#### `GET /api/v1/channels/:channelId/messages`
 
 Kanaldaki mesajları getirir (pagination ile).
+
+**Direct:** `GET /channels/:channelId/messages`
 
 **Query Parameters:**
 - `limit` (optional): Mesaj sayısı (default: 50)
@@ -50,9 +55,11 @@ Kanaldaki mesajları getirir (pagination ile).
 ]
 ```
 
-#### `POST /channels/:channelId/messages`
+#### `POST /api/v1/channels/:channelId/messages`
 
 Yeni mesaj gönderir.
+
+**Direct:** `POST /channels/:channelId/messages`
 
 **Headers:** `Authorization: Bearer <token>`
 
@@ -141,9 +148,11 @@ Typing indicator başlatır (10 saniye geçerli).
 
 ### 📨 DM Channels
 
-#### `GET /users/@me/channels`
+#### `GET /api/v1/users/@me/channels`
 
 Kullanıcının DM kanallarını getirir.
+
+**Direct:** `GET /users/@me/channels`
 
 **Headers:** `Authorization: Bearer <token>`
 

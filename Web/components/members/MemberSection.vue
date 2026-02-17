@@ -9,12 +9,3 @@
   </div>
 </template>
 
-<script setup lang="ts">
-interface Props {
-  role: string
-  count: number
-  color?: string
-}
-
-defineProps<Props>()
-</script>

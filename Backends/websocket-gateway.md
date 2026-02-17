@@ -1,9 +1,11 @@
 # WebSocket Gateway API Dokümantasyonu
 
 **Port:** 3005 (WebSocket), 3006 (HTTP)  
-**WebSocket URL:** `ws://localhost:3005`  
-**HTTP URL:** `http://localhost:3006`  
+**WebSocket URL:** `ws://localhost/ws` (Traefik) / `ws://localhost:3005` (Direct)  
+**HTTP URL:** `http://localhost/api/v1/ws` (Traefik) / `http://localhost:3006` (Direct)  
 **Swagger:** `http://localhost:3006/swagger`
+
+> **Not:** WebSocket bağlantıları için Traefik üzerinden `/ws` endpoint'i kullanılır. HTTP istekler `/api/v1/ws` prefix'i ile yapılır.
 
 ## Genel Bilgi
 
@@ -16,7 +18,11 @@ WebSocket Gateway, gerçek zamanlı event'leri client'lara iletir. RabbitMQ'dan 
 ### Connection
 
 ```javascript
-const ws = new WebSocket('ws://localhost:3005');
+// Traefik üzerinden (Production)
+const ws = new WebSocket('ws://localhost/ws');
+
+// Direkt bağlantı (Development)
+// const ws = new WebSocket('ws://localhost:3005');
 
 ws.onopen = () => {
   // Identify (kimlik doğrulama)
@@ -256,7 +262,9 @@ Kanal silindi.
 
 ### 🏥 Health Check
 
-#### `GET /health`
+#### `GET /api/v1/ws/health`
+
+**Direct:** `GET /health`
 
 ```json
 {

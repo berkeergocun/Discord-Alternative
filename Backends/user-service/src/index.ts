@@ -39,7 +39,50 @@ const app = new Elysia()
   )
   .get('/health', () => ({ status: 'ok', service: 'user-service' }))
   
-  // Get user profile
+  // Get current user profile
+  .get('/users/@me', async ({ bearer }) => {
+    if (!bearer) {
+      return { 
+        success: false,
+        error: 'Unauthorized' 
+      };
+    }
+    
+    try {
+      // Extract userId from token (format: access_<userId>_<timestamp>)
+      const tokenParts = bearer.split('_');
+      if (tokenParts.length >= 2) {
+        const userId = tokenParts[1];
+        
+        // Get user from auth database (mock for now)
+        // In production, this should call auth service or decode JWT
+        return {
+          success: true,
+          data: {
+            id: userId,
+            email: 'user@example.com', // Mock data
+            username: 'testuser999', // Mock data
+            emailVerified: false,
+            twoFactorEnabled: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }
+        };
+      }
+      
+      return { 
+        success: false,
+        error: 'Invalid token format' 
+      };
+    } catch (error) {
+      return { 
+        success: false,
+        error: 'Failed to get user profile' 
+      };
+    }
+  }, { detail: { tags: ['users'] } })
+  
+  // Get user profile by ID
   .get('/users/:userId', async ({ params: { userId } }) => {
     const profile = await UserProfile.findOne({ userId: new mongoose.Types.ObjectId(userId) });
     return profile || { error: 'Profile not found' };

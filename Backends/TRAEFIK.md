@@ -83,20 +83,29 @@ docker-compose down
 
 ## Erişim Adresleri
 
-### 🎯 Traefik Üzerinden (Port 80)
+### � Traefik Üzerinden (Port 80)
 
-Traefik üzerinden tüm servislere erişebilirsiniz:
+Traefik üzerinden hem frontend hem backend'e erişebilirsiniz:
 
+#### Frontend Routes (`/*`)
+| Route | Açıklama |
+|-------|----------|
+| http://localhost/ | Ana sayfa |
+| http://localhost/login | Login sayfası |
+| http://localhost/register | Kayıt sayfası |
+| http://localhost/channels/@me | DM/Friends ana sayfası |
+| http://localhost/channels/@me/:dmId | DM konuşması |
+| http://localhost/channels/:serverId/:channelId | Sunucu kanalı |
+
+#### Backend API Routes (`/api/v1/*`)
 | Servis | Adres | Açıklama |
 |--------|-------|----------|
-| API Gateway | http://localhost/api | Unified API Gateway |
-| Auth Service | http://localhost/auth | Authentication & Authorization |
-| User Service | http://localhost/users | User Management |
-| Guild Service | http://localhost/guilds | Guild/Server Management |
-| Message Service | http://localhost/messages | Messaging & DMs |
-| WebSocket Gateway | http://localhost/ws | Real-time Events |
-| SFU Service | http://localhost/sfu | Voice & Video |
-| Swagger Docs | http://localhost/swagger | Unified API Documentation |
+| Auth Service | http://localhost/api/v1/auth | Authentication & Authorization |
+| User Service | http://localhost/api/v1/users | User Management |
+| Guild Service | http://localhost/api/v1/guilds | Guild/Server Management |
+| Message Service | http://localhost/api/v1/channels<br>http://localhost/api/v1/messages | Messaging & DMs |
+| WebSocket Gateway | http://localhost/api/v1/ws (HTTP)<br>ws://localhost/ws (WebSocket) | Real-time Events |
+| SFU Service | http://localhost/api/v1/channels/:id/voice | Voice & Video |
 
 ### 📊 Dashboard ve Management
 
@@ -111,13 +120,13 @@ Traefik'i bypass edip servislere direkt erişim:
 
 | Servis | Adres | Swagger |
 |--------|-------|---------|
+| Frontend (Nuxt) | http://localhost:3000 | - |
 | Auth Service | http://localhost:3001 | /swagger |
 | User Service | http://localhost:3002 | /swagger |
 | Guild Service | http://localhost:3003 | /swagger |
 | Message Service | http://localhost:3004 | /swagger |
 | WebSocket Gateway | http://localhost:3006 | /swagger |
 | SFU Service | http://localhost:3007 | /swagger |
-| API Gateway | http://localhost:3100 | /swagger |
 
 ---
 
@@ -126,48 +135,66 @@ Traefik'i bypass edip servislere direkt erişim:
 Traefik, gelen istekleri URL path'ine göre yönlendirir:
 
 ```
-http://localhost/auth/register
+http://localhost/api/v1/auth/register
                  ↓
         Traefik Gateway (Port 80)
                  ↓
-        Path Prefix: /auth
+        PathPrefix: /api/v1/auth
+                 ↓
+        Middleware: Strip /api/v1
                  ↓
         Auth Service (Port 3001)
                  ↓
-        Endpoint: /register
+        Endpoint: /auth/register
 ```
 
 ### Routing Kuralları
 
-1. **Path-based routing**: URL path'ine göre yönlendirme
-2. **Strip prefix**: Servis path'i otomatik olarak temizlenir
-3. **Health checks**: Her servis için otomatik sağlık kontrolü
-4. **Load balancing**: Birden fazla instance varsa otomatik dağıtım
+1. **Frontend routing (`/*`)**: Priority 1, Nuxt.js'e yönlendirme
+2. **Backend routing (`/api/v1/*`)**: PathPrefix ile servislere yönlendirme
+3. **Strip prefix**: `/api/v1` middleware ile otomatik temizlenir
+4. **Health checks**: Her servis için otomatik sağlık kontrolü
+5. **Load balancing**: Birden fazla instance varsa otomatik dağıtım
 
 ### Örnek İstekler
 
-#### Traefik üzerinden:
+#### Frontend (Traefik üzerinden):
+```bash
+# Ana sayfa
+curl http://localhost/
+
+# Login sayfası
+curl http://localhost/login
+
+# Channels
+curl http://localhost/channels/@me
+```
+
+#### Backend API (Traefik üzerinden):
 ```bash
 # Register
-curl -X POST http://localhost/auth/register \
+curl -X POST http://localhost/api/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"123456"}'
+  -d '{"email":"test@example.com","username":"test","password":"123456"}'
 
 # Get user
-curl http://localhost/users/me \
+curl http://localhost/api/v1/users/@me \
   -H "Authorization: Bearer YOUR_TOKEN"
 
 # Get guilds
-curl http://localhost/guilds \
+curl http://localhost/api/v1/guilds \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
-#### Direkt servis erişimi:
+#### Direkt servis erişimi (Development):
 ```bash
+# Nuxt direkt
+curl http://localhost:3000/login
+
 # Auth Service direkt
 curl -X POST http://localhost:3001/register \
   -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"123456"}'
+  -d '{"email":"test@example.com","username":"test","password":"123456"}'
 ```
 
 ---

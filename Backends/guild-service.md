@@ -1,8 +1,11 @@
 # Guild Service API Dokümantasyonu
 
 **Port:** 3003  
-**Base URL:** `http://localhost:3003`  
+**Base URL:** `http://localhost/api/v1/guilds`  
+**Direct URL:** `http://localhost:3003`  
 **Swagger:** `http://localhost:3003/swagger`
+
+> **Not:** Tüm istekler Traefik API Gateway üzerinden `/api/v1/guilds` prefix'i ile yapılır.
 
 ## Genel Bilgi
 
@@ -24,9 +27,11 @@ Guild Service, sunucular (guilds), kanallar, roller ve davetler gibi sunucu yön
 
 ### 🏰 Guild Management
 
-#### `GET /guilds`
+#### `GET /api/v1/guilds`
 
 Kullanıcının üyesi olduğu tüm sunucuları getirir.
+
+**Direct:** `GET /guilds`
 
 **Headers:** `Authorization: Bearer <token>`
 
@@ -43,9 +48,11 @@ Kullanıcının üyesi olduğu tüm sunucuları getirir.
 ]
 ```
 
-#### `POST /guilds`
+#### `POST /api/v1/guilds`
 
 Yeni sunucu oluşturur.
+
+**Direct:** `POST /guilds`
 
 **Headers:** `Authorization: Bearer <token>`
 
@@ -91,9 +98,11 @@ Sunucuyu siler.
 
 ### 📺 Channel Management
 
-#### `GET /guilds/:guildId/channels`
+#### `GET /api/v1/guilds/:guildId/channels`
 
 Sunucudaki tüm kanalları getirir.
+
+**Direct:** `GET /guilds/:guildId/channels`
 
 **Response:**
 ```json

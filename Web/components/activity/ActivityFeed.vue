@@ -32,32 +32,3 @@
   </div>
 </template>
 
-<script setup lang="ts">
-interface Activity {
-  userId: string
-  username: string
-  displayName: string
-  avatar?: string
-  status: 'online' | 'idle' | 'dnd' | 'offline'
-  activity?: string
-  activityType?: 'playing' | 'listening' | 'watching' | 'streaming'
-  activityDetails?: string
-  timestamp?: Date
-}
-
-interface Props {
-  activities?: Activity[]
-}
-
-withDefaults(defineProps<Props>(), {
-  activities: () => []
-})
-
-const emit = defineEmits<{
-  'activity-click': [activity: Activity]
-}>()
-
-const handleActivityClick = (activity: Activity) => {
-  emit('activity-click', activity)
-}
-</script>

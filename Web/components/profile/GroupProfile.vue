@@ -97,30 +97,6 @@
   </div>
 </template>
 
-<script setup lang="ts">
-interface Member {
-  id: string
-  username: string
-  displayName?: string
-  avatar?: string
-  status: 'online' | 'idle' | 'dnd' | 'offline'
-  activity?: string
-}
-
-interface Props {
-  groupName: string
-  memberCount: number
-  owner?: Member
-  members: Member[]
-}
-
-defineProps<Props>()
-
-const emit = defineEmits<{
-  'member-click': [memberId: string]
-  'leave-group': []
-}>()
-</script>
 
 <style scoped>
 .custom-scrollbar::-webkit-scrollbar {

@@ -26,36 +26,3 @@
   </div>
 </template>
 
-<script setup lang="ts">
-const emit = defineEmits<{
-  loaded: []
-}>()
-
-const loadingTexts = [
-  'Yükleniyor...',
-  'Sunuculara bağlanılıyor...',
-  'Hazırlanıyor...',
-]
-
-const loadingText = ref(loadingTexts[0])
-let currentIndex = 0
-
-// Simulate loading with text changes
-const loadingInterval = setInterval(() => {
-  currentIndex = (currentIndex + 1) % loadingTexts.length
-  loadingText.value = loadingTexts[currentIndex]
-}, 800)
-
-onMounted(() => {
-  // Minimum loading time of 2 seconds
-  setTimeout(() => {
-    clearInterval(loadingInterval)
-    sessionStorage.setItem('app-loaded', 'true')
-    emit('loaded')
-  }, 2000)
-})
-
-onUnmounted(() => {
-  clearInterval(loadingInterval)
-})
-</script>

@@ -1,13 +1,3 @@
-<script setup lang="ts">
-import { DialogOverlay } from 'radix-vue'
-import { cn } from '~/lib/utils'
-
-interface Props {
-  class?: string
-}
-
-const props = defineProps<Props>()
-</script>
 
 <template>
   <DialogOverlay

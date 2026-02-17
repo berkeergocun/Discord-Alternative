@@ -43,32 +43,3 @@
   </div>
 </template>
 
-<script setup lang="ts">
-interface Attachment {
-  id: string
-  url: string
-  name: string
-  type: 'image' | 'video' | 'file'
-  size?: number
-}
-
-interface Props {
-  attachment: Attachment
-}
-
-defineProps<Props>()
-
-const emit = defineEmits<{
-  'open': []
-  'download': []
-}>()
-
-const formatFileSize = (bytes?: number) => {
-  if (!bytes) return 'Unknown size'
-  
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`
-}
-</script>

@@ -16,18 +16,3 @@
   </div>
 </template>
 
-<script setup lang="ts">
-interface Props {
-  users: string[]
-}
-
-const props = defineProps<Props>()
-
-const formattedUsers = computed(() => {
-  if (props.users.length === 0) return ''
-  if (props.users.length === 1) return props.users[0]
-  if (props.users.length === 2) return `${props.users[0]} ve ${props.users[1]}`
-  if (props.users.length === 3) return `${props.users[0]}, ${props.users[1]} ve ${props.users[2]}`
-  return `${props.users.slice(0, 3).join(', ')} ve ${props.users.length - 3} kişi daha`
-})
-</script>

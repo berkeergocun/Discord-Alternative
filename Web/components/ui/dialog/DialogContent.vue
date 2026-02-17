@@ -1,16 +1,3 @@
-<script setup lang="ts">
-import { DialogContent, DialogClose } from 'radix-vue'
-import { cn } from '~/lib/utils'
-import { X } from 'lucide-vue-next'
-import DialogPortal from './DialogPortal.vue'
-import DialogOverlay from './DialogOverlay.vue'
-
-interface Props {
-  class?: string
-}
-
-const props = defineProps<Props>()
-</script>
 
 <template>
   <DialogPortal>

@@ -34,18 +34,3 @@
   </button>
 </template>
 
-<script setup lang="ts">
-interface Props {
-  name: string
-  isCollapsed?: boolean
-}
-
-withDefaults(defineProps<Props>(), {
-  isCollapsed: false
-})
-
-const emit = defineEmits<{
-  'toggle': []
-  'add-channel': []
-}>()
-</script>

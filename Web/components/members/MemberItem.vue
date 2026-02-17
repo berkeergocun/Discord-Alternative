@@ -40,26 +40,3 @@
   </div>
 </template>
 
-<script setup lang="ts">
-interface Member {
-  id: string
-  username: string
-  displayName?: string
-  avatar?: string
-  status: 'online' | 'idle' | 'dnd' | 'offline'
-  customStatus?: string
-  bot?: boolean
-  mobile?: boolean
-  activity?: string
-}
-
-interface Props {
-  member: Member
-}
-
-defineProps<Props>()
-
-const emit = defineEmits<{
-  'click': []
-}>()
-</script>

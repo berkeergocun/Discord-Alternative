@@ -13,31 +13,21 @@
       
       <!-- Tabs -->
       <div class="flex items-center gap-4">
-        <button
-          v-for="tab in tabs"
-          :key="tab"
-          :class="cn(
-            'px-2 py-1 text-sm font-medium rounded transition-colors',
-            activeTab === tab
-              ? 'bg-bg-secondary text-text-primary'
-              : 'text-text-secondary hover:text-text-primary hover:bg-bg-secondary/50'
-          )"
-          @click="activeTab = tab"
-        >
-          {{ tab }}
+        <button class="px-2 py-1 text-sm font-medium rounded transition-colors bg-bg-secondary text-text-primary">
+          Çevrimiçi
+        </button>
+        <button class="px-2 py-1 text-sm font-medium rounded transition-colors text-text-secondary hover:text-text-primary hover:bg-bg-secondary/50">
+          Tümü
+        </button>
+        <button class="px-2 py-1 text-sm font-medium rounded transition-colors text-text-secondary hover:text-text-primary hover:bg-bg-secondary/50">
+          Bekleyen
+        </button>
+        <button class="px-2 py-1 text-sm font-medium rounded transition-colors text-text-secondary hover:text-text-primary hover:bg-bg-secondary/50">
+          Engellenen
         </button>
       </div>
       
       <div class="flex-1" />
-      
-      <!-- Toggle Activity Feed Button -->
-      <button 
-        class="text-text-muted hover:text-text-primary transition-colors"
-        @click="emit('toggle-activity')"
-        :title="showActivityFeed ? 'Aktiviteleri Gizle' : 'Aktiviteleri Göster'"
-      >
-        <Users :size="24" :stroke-width="2" />
-      </button>
       
       <button class="hidden md:block px-3 py-1.5 bg-accent-green text-white text-sm font-medium rounded hover:bg-accent-green/90 transition-colors">
         Arkadaş Ekle
@@ -48,7 +38,6 @@
     <div class="px-8 pt-4 pb-2">
       <input
         type="text"
-        v-model="searchQuery"
         placeholder="Ara"
         class="w-full px-3 py-2 bg-bg-tertiary text-text-primary text-sm rounded border border-transparent focus:border-blurple outline-none placeholder:text-text-muted"
       />
@@ -57,163 +46,78 @@
     <!-- Friends List -->
     <div class="flex-1 overflow-y-auto px-8 py-2 custom-scrollbar">
       <div class="space-y-2">
-        <div
-          v-for="friend in filteredFriends"
-          :key="friend.id"
-          class="flex items-center justify-between p-3 rounded-lg border-t border-bg-secondary hover:bg-bg-secondary/50 transition-colors"
-        >
+        <!-- Friend Item Example -->
+        <div class="flex items-center justify-between p-3 rounded-lg border-t border-bg-secondary hover:bg-bg-secondary/50 transition-colors">
           <div class="flex items-center gap-3 flex-1 min-w-0">
-            <Avatar
-              :src="friend.avatar"
-              :alt="friend.username"
-              :fallback="friend.username[0]"
-              :status="friend.status"
-              size="md"
-            />
+            <div class="relative">
+              <div class="w-8 h-8 rounded-full bg-blurple flex items-center justify-center text-white font-semibold">
+                U
+              </div>
+              <div class="absolute bottom-0 right-0 w-3 h-3 bg-accent-green rounded-full border-2 border-bg-chat"></div>
+            </div>
             
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
                 <span class="text-sm font-semibold text-text-primary">
-                  {{ friend.displayName || friend.username }}
+                  User123
                 </span>
-                <Badge v-if="friend.bot" variant="bot" size="sm">
-                  BOT
-                </Badge>
               </div>
               <p class="text-xs text-text-muted truncate">
-                {{ getStatusText(friend) }}
+                Çevrimiçi
               </p>
             </div>
           </div>
           
           <div class="flex items-center gap-2">
-            <button
-              class="w-8 h-8 flex items-center justify-center rounded-full bg-bg-tertiary hover:bg-bg-floating text-text-secondary hover:text-text-primary transition-colors"
-              @click="emit('start-dm', getDmForFriend(friend.id))"
-              title="Mesaj Gönder"
-            >
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <button class="p-2 bg-bg-secondary rounded-full hover:bg-bg-tertiary transition-colors" title="Mesaj Gönder">
+              <svg class="w-5 h-5 text-text-muted" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
               </svg>
             </button>
+            <button class="p-2 rounded-full hover:bg-bg-secondary transition-colors">
+              <svg class="w-5 h-5 text-text-muted" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- More friend items can be added here -->
+        <div class="flex items-center justify-between p-3 rounded-lg border-t border-bg-secondary hover:bg-bg-secondary/50 transition-colors">
+          <div class="flex items-center gap-3 flex-1 min-w-0">
+            <div class="relative">
+              <div class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white font-semibold">
+                T
+              </div>
+              <div class="absolute bottom-0 right-0 w-3 h-3 bg-yellow-500 rounded-full border-2 border-bg-chat"></div>
+            </div>
             
-            <button
-              class="w-8 h-8 flex items-center justify-center rounded-full bg-bg-tertiary hover:bg-bg-floating text-text-secondary hover:text-text-primary transition-colors"
-              title="Daha Fazla"
-            >
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-semibold text-text-primary">
+                  TestUser
+                </span>
+              </div>
+              <p class="text-xs text-text-muted truncate">
+                Boşta
+              </p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <button class="p-2 bg-bg-secondary rounded-full hover:bg-bg-tertiary transition-colors" title="Mesaj Gönder">
+              <svg class="w-5 h-5 text-text-muted" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+              </svg>
+            </button>
+            <button class="p-2 rounded-full hover:bg-bg-secondary transition-colors">
+              <svg class="w-5 h-5 text-text-muted" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
               </svg>
             </button>
           </div>
         </div>
       </div>
-      
-      <!-- Empty State -->
-      <div v-if="filteredFriends.length === 0" class="flex flex-col items-center justify-center py-16">
-        <div class="w-24 h-24 rounded-full bg-bg-secondary flex items-center justify-center mb-4">
-          <svg class="w-12 h-12 text-text-muted" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-          </svg>
-        </div>
-        <p class="text-text-secondary">Hiç arkadaş bulunamadı</p>
-      </div>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { cn } from '~/lib/utils'
-import { Users } from 'lucide-vue-next'
-
-interface Friend {
-  id: string
-  username: string
-  displayName?: string
-  avatar?: string
-  status: 'online' | 'idle' | 'dnd' | 'offline'
-  activity?: string
-  bot?: boolean
-}
-
-interface Props {
-  friends: Friend[]
-  showActivityFeed?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  showActivityFeed: true
-})
-
-const emit = defineEmits<{
-  'start-dm': [dmId: string]
-  'toggle-activity': []
-}>()
-
-const tabs = ['Çevrimiçi', 'Tümü', 'Bekleyen', 'Engellenen']
-const activeTab = ref('Çevrimiçi')
-const searchQuery = ref('')
-
-const filteredFriends = computed(() => {
-  let filtered = props.friends
-
-  // Filter by tab
-  if (activeTab.value === 'Çevrimiçi') {
-    filtered = filtered.filter(f => f.status !== 'offline')
-  }
-
-  // Filter by search
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(f =>
-      f.username.toLowerCase().includes(query) ||
-      f.displayName?.toLowerCase().includes(query)
-    )
-  }
-
-  return filtered
-})
-
-const getStatusText = (friend: Friend) => {
-  if (friend.bot) return 'Bot'
-  
-  switch (friend.status) {
-    case 'online':
-      return friend.activity || 'Çevrimiçi'
-    case 'idle':
-      return 'Boşta'
-    case 'dnd':
-      return 'Rahatsız Etmeyin'
-    case 'offline':
-      return 'Çevrimdışı'
-    default:
-      return ''
-  }
-}
-
-const getDmForFriend = (friendId: string) => {
-  // Find or create DM ID for this friend
-  return `dm${friendId.replace('user', '')}`
-}
-</script>
-
-<style scoped>
-.custom-scrollbar::-webkit-scrollbar {
-  width: 16px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #1A1B1E;
-  border-radius: 8px;
-  border: 4px solid transparent;
-  background-clip: padding-box;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #2E3035;
-}
-</style>

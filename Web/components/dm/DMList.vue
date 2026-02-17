@@ -41,33 +41,3 @@
   </Suspense>
 </template>
 
-<script setup lang="ts">
-interface DM {
-  id: string
-  type: 'dm' | 'group'
-  name?: string
-  avatar?: string
-  status?: 'online' | 'idle' | 'dnd' | 'offline'
-  userId?: string
-  owner?: string
-  members?: string[]
-  lastMessage?: string
-  timestamp?: Date
-  unreadCount?: number
-}
-
-interface Props {
-  dms?: DM[]
-  activeDmId?: string
-}
-
-withDefaults(defineProps<Props>(), {
-  dms: () => [],
-  activeDmId: ''
-})
-
-const emit = defineEmits<{
-  'friends': []
-  'dm-select': [dmId: string]
-}>()
-</script>

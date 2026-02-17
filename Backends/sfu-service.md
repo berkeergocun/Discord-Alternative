@@ -1,8 +1,11 @@
 # SFU Service API Dokümantasyonu
 
 **Port:** 3007  
-**Base URL:** `http://localhost:3007`  
+**Base URL:** `http://localhost/api/v1` (Traefik)  
+**Direct URL:** `http://localhost:3007`  
 **Swagger:** `http://localhost:3007/swagger`
+
+> **Not:** Voice endpoint'leri Traefik üzerinden `/api/v1/channels/:channelId/voice/*` pattern'i ile erişilir.
 
 ## Genel Bilgi
 
@@ -27,9 +30,11 @@ SFU (Selective Forwarding Unit) Service, sesli ve görüntülü sohbet özellikl
 
 ### 🎙️ Voice Session Management
 
-#### `POST /channels/:channelId/voice/join`
+#### `POST /api/v1/channels/:channelId/voice/join`
 
 Sesli kanala katılır ve session oluşturur.
+
+**Direct:** `POST /channels/:channelId/voice/join`
 
 **Headers:** `Authorization: Bearer <token>`
 
@@ -48,9 +53,11 @@ Sesli kanala katılır ve session oluşturur.
 
 ---
 
-#### `PATCH /channels/:channelId/voice/@me`
+#### `PATCH /api/v1/channels/:channelId/voice/@me`
 
 Kendi ses/video ayarlarını günceller.
+
+**Direct:** `PATCH /channels/:channelId/voice/@me`
 
 **Headers:** `Authorization: Bearer <token>`
 
@@ -79,9 +86,11 @@ Kendi ses/video ayarlarını günceller.
 
 ---
 
-#### `DELETE /channels/:channelId/voice/@me`
+#### `DELETE /api/v1/channels/:channelId/voice/@me`
 
 Sesli kanaldan ayrılır.
+
+**Direct:** `DELETE /channels/:channelId/voice/@me`
 
 **Headers:** `Authorization: Bearer <token>`
 
@@ -98,9 +107,11 @@ Sesli kanaldan ayrılır.
 
 ---
 
-#### `GET /channels/:channelId/voice/participants`
+#### `GET /api/v1/channels/:channelId/voice/participants`
 
 Sesli kanaldaki katılımcıları listeler.
+
+**Direct:** `GET /channels/:channelId/voice/participants`
 
 **Response:**
 ```json

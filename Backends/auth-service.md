@@ -2,9 +2,12 @@
 
 ## Genel Bilgiler
 
-**Base URL**: `http://localhost:3001`  
+**Base URL**: `http://localhost/api/v1/auth`  
+**Direct URL**: `http://localhost:3001`  
 **Version**: 1.0.0  
 **Port**: 3001
+
+> **Not:** Tüm istekler Traefik API Gateway üzerinden `/api/v1/auth` prefix'i ile yapılır. Geliştirme için direkt servis erişimi (port 3001) de kullanılabilir.
 
 Auth Service, Discord Alternative platformunun kimlik doğrulama ve yetkilendirme işlemlerinden sorumludur.
 
@@ -51,9 +54,12 @@ Servisin çalışır durumda olup olmadığını kontrol eder.
 
 ### Authentication
 
-#### POST `/auth/register`
+#### POST `/api/v1/auth/register`
 
 Yeni kullanıcı kaydı oluşturur.
+
+**Traefik URL:** `http://localhost/api/v1/auth/register`  
+**Direct URL:** `http://localhost:3001/register`
 
 **Request Body:**
 ```json
@@ -98,9 +104,12 @@ Yeni kullanıcı kaydı oluşturur.
 
 ---
 
-#### POST `/auth/login`
+#### POST `/api/v1/auth/login`
 
 Kullanıcı girişi yapar ve token'lar döner.
+
+**Traefik URL:** `http://localhost/api/v1/auth/login`  
+**Direct URL:** `http://localhost:3001/login`
 
 **Request Body:**
 ```json
@@ -160,9 +169,12 @@ Kullanıcı girişi yapar ve token'lar döner.
 
 ---
 
-#### POST `/auth/logout`
+#### POST `/api/v1/auth/logout`
 
 Kullanıcı çıkışı yapar ve token'ları geçersiz kılar.
+
+**Traefik URL:** `http://localhost/api/v1/auth/logout`  
+**Direct URL:** `http://localhost:3001/logout`
 
 **Headers:**
 ```
@@ -188,9 +200,12 @@ Authorization: Bearer <access_token>
 
 ---
 
-#### POST `/auth/refresh`
+#### POST `/api/v1/auth/refresh`
 
 Refresh token kullanarak yeni access token alır.
+
+**Traefik URL:** `http://localhost/api/v1/auth/refresh`  
+**Direct URL:** `http://localhost:3001/refresh`
 
 **Request Body:**
 ```json

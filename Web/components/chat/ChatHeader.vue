@@ -93,29 +93,3 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { Hash, Volume2 } from 'lucide-vue-next'
-
-interface Props {
-  title: string
-  description?: string
-  type: 'text' | 'voice' | 'dm'
-  showMemberList?: boolean
-  showUserProfile?: boolean
-  showGroupProfile?: boolean
-}
-
-withDefaults(defineProps<Props>(), {
-  showMemberList: false,
-  showUserProfile: false,
-  showGroupProfile: false
-})
-
-const emit = defineEmits<{
-  'pins': []
-  'threads': []
-  'members': []
-  'toggle-profile': []
-  'search': []
-}>()
-</script>

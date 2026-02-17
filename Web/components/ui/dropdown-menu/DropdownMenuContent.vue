@@ -1,18 +1,3 @@
-<script setup lang="ts">
-import { DropdownMenuContent, DropdownMenuPortal } from 'radix-vue'
-import { cn } from '~/lib/utils'
-
-interface Props {
-  class?: string
-  sideOffset?: number
-  align?: 'start' | 'center' | 'end'
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  sideOffset: 4,
-  align: 'start'
-})
-</script>
 
 <template>
   <DropdownMenuPortal>

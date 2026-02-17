@@ -7,6 +7,11 @@ export default defineNuxtConfig({
   
   ssr: false, // CSR mode as requested
   
+  devServer: {
+    host: '0.0.0.0', // Listen on all interfaces for Docker access
+    port: 3000
+  },
+  
   app: {
     head: {
       title: 'Discord Alternative',
