@@ -2,13 +2,19 @@
   <div class="h-[52px] bg-bg-tertiary px-2 py-2 flex items-center gap-2">
     <!-- User Avatar and Info -->
     <div class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer hover:bg-bg-secondary/50 rounded p-1 -ml-1 transition-colors">
-      <div class="w-8 h-8 rounded-full bg-blurple flex items-center justify-center text-white font-semibold text-sm">
-        U
+      <div class="relative">
+        <div v-if="user?.avatar" class="w-8 h-8 rounded-full overflow-hidden">
+          <img :src="user.avatar" :alt="user.username" class="w-full h-full object-cover" />
+        </div>
+        <div v-else class="w-8 h-8 rounded-full bg-blurple flex items-center justify-center text-white font-semibold text-sm">
+          {{ user?.username?.charAt(0)?.toUpperCase() || 'U' }}
+        </div>
+        <div class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-bg-tertiary"></div>
       </div>
       
       <div class="flex flex-col min-w-0 flex-1">
         <span class="text-sm font-semibold text-text-primary truncate">
-          Kullanıcı
+          {{ user?.displayName || user?.username || 'Kullanıcı' }}
         </span>
         <span class="text-xs text-text-secondary truncate">
           Çevrimiçi
@@ -43,3 +49,6 @@
     </div>
   </div>
 </template>
+<script setup lang="ts">
+const { user, logout } = useAuth()
+</script>
