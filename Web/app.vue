@@ -8,7 +8,8 @@
 </template>
 
 <script setup lang="ts">
-const { initAuth, isLoading: authLoading } = useAuth()
+const { initAuth, isLoading: authLoading, isAuthenticated } = useAuth()
+const { connect: connectWS } = useWebSocket()
 const isInitialLoad = ref(true)
 
 const handleLoaded = () => {
@@ -30,5 +31,19 @@ onMounted(async () => {
 
   // Initialize auth
   await initAuth()
+
+  // WebSocket'i auth başarılıysa başlat
+  if (isAuthenticated.value) {
+    const token = localStorage.getItem('discord_access_token')
+    if (token) connectWS(token)
+  }
+})
+
+// Token geldiğinde WebSocket bağla (login sonrası)
+watch(isAuthenticated, (authed) => {
+  if (authed) {
+    const token = localStorage.getItem('discord_access_token')
+    if (token) connectWS(token)
+  }
 })
 </script>

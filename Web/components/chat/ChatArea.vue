@@ -18,12 +18,12 @@
         />
         
         <!-- Messages Area -->
-        <div class="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
+        <div ref="listEl" class="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
           <MessageList
             :messages="messages"
             :isLoading="isLoading"
             @load-more="emit('load-more')"
-            @reply="emit('reply', $event)"
+            @reply="handleReply"
             @react="emit('react', $event)"
             @edit="emit('edit', $event)"
             @delete="emit('delete', $event)"
@@ -37,9 +37,9 @@
         <ChatInput
           :placeholder="inputPlaceholder"
           :replyTo="replyTo"
-          @send="emit('send', $event)"
-          @cancel-reply="emit('cancel-reply')"
-          @typing="emit('typing')"
+          @send="handleSend"
+          @cancel-reply="handleCancelReply"
+          @typing="handleTyping"
         />
       </div>
     </template>
@@ -51,7 +51,11 @@
 
 
 <script setup lang="ts">
+import { messageService } from '~/lib/api'
+
+// ─── Props ───────────────────────────────────────────────────────────────────
 const props = withDefaults(defineProps<{
+  channelId?: string          // gerçek kanal ID — yoksa statik mod
   channelName?: string
   channelDescription?: string
   channelType?: 'text' | 'voice' | 'dm' | 'group'
@@ -59,7 +63,6 @@ const props = withDefaults(defineProps<{
   showUserProfile?: boolean
   showGroupProfile?: boolean
   inputPlaceholder?: string
-  staticMessages?: any[]
 }>(), {
   channelName: 'direkt-mesaj',
   channelType: 'dm',
@@ -83,65 +86,170 @@ const emit = defineEmits<{
   typing: []
 }>()
 
-const replyTo = ref<{ author: { username: string }; content: string } | null>(null)
-const typingUsers = ref<string[]>([])
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+const { user } = useAuth()
+
+// ─── State ───────────────────────────────────────────────────────────────────
+const messages = ref<any[]>([])
 const isLoading = ref(false)
+const replyTo = ref<{ id?: string; author: { username: string }; content: string } | null>(null)
+const typingUsers = ref<string[]>([])
+const listEl = ref<HTMLElement | null>(null)
+let typingTimeout: ReturnType<typeof setTimeout> | null = null
 
-// Statik mesajlar (sonra backend'den gelecek)
-const messages = computed(() => props.staticMessages ?? [
-  {
-    id: '1',
-    content: 'Merhaba! Nasılsın?',
-    timestamp: new Date(Date.now() - 30 * 60 * 1000),
-    author: { id: 'u1', username: 'Ali Yılmaz', displayName: 'Ali Yılmaz' },
-  },
-  {
-    id: '2',
-    content: 'İyiyim teşekkür ederim! Sen nasılsın?',
-    timestamp: new Date(Date.now() - 28 * 60 * 1000),
-    author: { id: 'u2', username: 'sen', displayName: 'Sen' },
-  },
-  {
-    id: '3',
-    content: 'Proje için yardımına ihtiyacım var, müsait misin?',
-    timestamp: new Date(Date.now() - 25 * 60 * 1000),
-    author: { id: 'u1', username: 'Ali Yılmaz', displayName: 'Ali Yılmaz' },
-  },
-  {
-    id: '4',
-    content: 'Tabii ki! Ne konuda?',
-    timestamp: new Date(Date.now() - 23 * 60 * 1000),
-    author: { id: 'u2', username: 'sen', displayName: 'Sen' },
-  },
-  {
-    id: '5',
-    content: 'API entegrasyonu hakkında bazı sorularım vardı, bu konuda deneyimin var mı?',
-    timestamp: new Date(Date.now() - 20 * 60 * 1000),
-    author: { id: 'u1', username: 'Ali Yılmaz', displayName: 'Ali Yılmaz' },
-  },
-  {
-    id: '6',
-    content: 'Evet, birkaç proje yaptım bu konuda. Söyle bakalım.',
-    timestamp: new Date(Date.now() - 18 * 60 * 1000),
-    author: { id: 'u2', username: 'sen', displayName: 'Sen' },
-  },
-])
-
-function handleSend(msg: string) {
-  emit('send', msg)
+// ─── Mesaj normalleştirme (api formatı → MessageList formatı) ─────────────────
+function normalizeMsg(m: any) {
+  const author = m.authorId ?? m.author ?? {}
+  return {
+    id: m._id ?? m.id,
+    content: m.content,
+    timestamp: new Date(m.createdAt ?? m.timestamp ?? Date.now()),
+    edited: m.edited ?? false,
+    replyTo: m.replyToId
+      ? { author: m.replyToId.authorId?.username ?? '...', content: m.replyToId.content ?? '' }
+      : undefined,
+    attachments: m.attachments,
+    reactions: m.reactions,
+    author: {
+      id: author._id ?? author.id ?? 'unknown',
+      username: author.username ?? 'Kullanıcı',
+      displayName: author.displayName ?? author.username ?? 'Kullanıcı',
+      avatar: author.avatarUrl ?? author.avatar,
+    },
+  }
 }
 
+// ─── Mesaj yükle ─────────────────────────────────────────────────────────────
+async function fetchMessages() {
+  if (!props.channelId) return
+  isLoading.value = true
+  try {
+    const res = await messageService.getMessages(props.channelId, 50)
+    if (res.success && Array.isArray(res.data)) {
+      // Eski mesajlar önce gelir — API'den ters sırayla gelebilir
+      messages.value = [...(res.data as any[])].reverse().map(normalizeMsg)
+    }
+  } finally {
+    isLoading.value = false
+    nextTick(scrollToBottom)
+  }
+}
+
+function scrollToBottom() {
+  if (listEl.value) {
+    listEl.value.scrollTop = listEl.value.scrollHeight
+  }
+}
+
+// ─── Mesaj gönder ────────────────────────────────────────────────────────────
+async function handleSend(content: string) {
+  if (!props.channelId) {
+    emit('send', content)
+    return
+  }
+  const tempId = `temp-${Date.now()}`
+  // Optimistik güncelleme
+  messages.value.push({
+    id: tempId,
+    content,
+    timestamp: new Date(),
+    edited: false,
+    replyTo: replyTo.value
+      ? { author: replyTo.value.author.username, content: replyTo.value.content }
+      : undefined,
+    author: {
+      id: user.value?.id ?? 'me',
+      username: user.value?.username ?? 'Sen',
+      displayName: user.value?.displayName ?? user.value?.username ?? 'Sen',
+      avatar: user.value?.avatar,
+    },
+  })
+  replyTo.value = null
+  nextTick(scrollToBottom)
+
+  const res = await messageService.sendMessage(
+    props.channelId,
+    content,
+    replyTo.value?.id,
+  )
+  if (res.success && res.data) {
+    // temp mesajı gerçek mesajla değiştir
+    const idx = messages.value.findIndex(m => m.id === tempId)
+    if (idx !== -1) messages.value[idx] = normalizeMsg(res.data)
+  }
+}
+
+// ─── Reply ───────────────────────────────────────────────────────────────────
 function handleReply(messageId: string) {
   const msg = messages.value.find(m => m.id === messageId)
   if (msg) {
-    replyTo.value = { author: { username: msg.author.username }, content: msg.content }
+    replyTo.value = { id: msg.id, author: { username: msg.author.username }, content: msg.content }
   }
+  emit('reply', messageId)
 }
 
 function handleCancelReply() {
   replyTo.value = null
   emit('cancel-reply')
 }
+
+// ─── Typing indicator ────────────────────────────────────────────────────────
+function handleTyping() {
+  if (!props.channelId) return
+  messageService.sendTyping(props.channelId)
+  emit('typing')
+}
+
+// ─── WebSocket: gerçek zamanlı mesajlar & typing ─────────────────────────────
+const { on, off } = useWebSocket()
+
+function onMessageCreate(data: any) {
+  if (data.channelId !== props.channelId) return
+  const msg = normalizeMsg(data.message)
+  // Optimistik mesajla çakışma kontrolü
+  const tempIdx = messages.value.findIndex(
+    m => m.id?.startsWith('temp-') && m.content === msg.content
+  )
+  if (tempIdx !== -1) {
+    messages.value[tempIdx] = msg
+  } else {
+    messages.value.push(msg)
+  }
+  nextTick(scrollToBottom)
+}
+
+function onTypingStart(data: any) {
+  if (data.channelId !== props.channelId) return
+  const uid = data.userId as string
+  if (!user.value || uid === user.value.id) return
+  if (!typingUsers.value.includes(uid)) {
+    typingUsers.value.push(uid)
+  }
+  if (typingTimeout) clearTimeout(typingTimeout)
+  typingTimeout = setTimeout(() => {
+    typingUsers.value = typingUsers.value.filter(u => u !== uid)
+  }, 10_000)
+}
+
+onMounted(() => {
+  fetchMessages()
+  on('message.create', onMessageCreate)
+  on('typing.start', onTypingStart)
+})
+
+onUnmounted(() => {
+  off('message.create', onMessageCreate)
+  off('typing.start', onTypingStart)
+  if (typingTimeout) clearTimeout(typingTimeout)
+})
+
+// Kanal değiştiğinde mesajları yeniden yükle
+watch(() => props.channelId, (newId) => {
+  if (newId) {
+    messages.value = []
+    fetchMessages()
+  }
+})
 </script>
 
 <style scoped>

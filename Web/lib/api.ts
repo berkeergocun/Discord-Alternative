@@ -44,13 +44,29 @@ class ApiClient {
         },
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || data.message || 'An error occurred')
+      // Bazı endpointler 204 No Content döner
+      if (response.status === 204) {
+        return { success: true }
       }
 
-      return data
+      const text = await response.text()
+      let data: any
+      try {
+        data = JSON.parse(text)
+      } catch {
+        throw new Error(`Sunucudan geçersiz yanıt: ${text.slice(0, 100)}`)
+      }
+
+      if (!response.ok) {
+        throw new Error(data?.error || data?.message || `HTTP ${response.status}`)
+      }
+
+      // Backend zaten { success, data } formatında dönüyorsa olduğu gibi kullan
+      // Aksi halde (raw array/object) sarmalayarak döndür
+      if (data !== null && typeof data === 'object' && 'success' in data) {
+        return data as ApiResponse<T>
+      }
+      return { success: true, data: data as T }
     } catch (error: any) {
       console.error('API Error:', error)
       return {
@@ -75,6 +91,13 @@ class ApiClient {
     return this.request<T>(endpoint, {
       method: 'PATCH',
       body: JSON.stringify(body),
+    })
+  }
+
+  async put<T>(endpoint: string, body?: any): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, {
+      method: 'PUT',
+      body: body ? JSON.stringify(body) : undefined,
     })
   }
 
@@ -120,6 +143,42 @@ export const userService = {
   async updateProfile(data: any) {
     return api.patch('/users/@me', data)
   },
+
+  async getUserById(userId: string) {
+    return api.get(`/users/${userId}`)
+  },
+
+  async getFriends() {
+    return api.get('/users/@me/friends')
+  },
+
+  async getPendingRequests() {
+    return api.get('/users/@me/friend-requests')
+  },
+
+  async sendFriendRequest(identifier: string) {
+    return api.post('/users/friend-request', { identifier })
+  },
+
+  async acceptFriendRequest(requestId: string) {
+    return api.put(`/users/@me/friend-requests/${requestId}`)
+  },
+
+  async declineFriendRequest(requestId: string) {
+    return api.delete(`/users/@me/friend-requests/${requestId}`)
+  },
+
+  async removeFriend(userId: string) {
+    return api.delete(`/users/@me/friends/${userId}`)
+  },
+
+  async blockUser(userId: string) {
+    return api.post(`/users/${userId}/block`)
+  },
+
+  async updatePresence(status: string, customStatus?: string) {
+    return api.patch('/users/@me/presence', { status, customStatus })
+  },
 }
 
 // Guild Service
@@ -139,16 +198,38 @@ export const guildService = {
 
 // Message Service
 export const messageService = {
-  async getMessages(channelId: string, limit = 50) {
-    return api.get(`/channels/${channelId}/messages?limit=${limit}`)
+  async getMessages(channelId: string, limit = 50, before?: string) {
+    const query = before
+      ? `?limit=${limit}&before=${before}`
+      : `?limit=${limit}`
+    return api.get(`/channels/${channelId}/messages${query}`)
   },
 
-  async sendMessage(channelId: string, content: string) {
-    return api.post(`/channels/${channelId}/messages`, { content })
+  async sendMessage(channelId: string, content: string, replyToId?: string) {
+    return api.post(`/channels/${channelId}/messages`, {
+      content,
+      ...(replyToId ? { replyToId } : {}),
+    })
   },
 
-  async getDMs() {
-    return api.get('/users/@me/channels')
+  async editMessage(channelId: string, messageId: string, content: string) {
+    return api.patch(`/channels/${channelId}/messages/${messageId}`, { content })
+  },
+
+  async deleteMessage(channelId: string, messageId: string) {
+    return api.delete(`/channels/${channelId}/messages/${messageId}`)
+  },
+
+  async sendTyping(channelId: string) {
+    return api.post(`/channels/${channelId}/typing`)
+  },
+
+  async getDMChannels() {
+    return api.get('/channels/dm')
+  },
+
+  async createDMChannel(recipientId: string) {
+    return api.post('/channels/dm', { recipientId })
   },
 }
 

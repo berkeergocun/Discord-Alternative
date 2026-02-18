@@ -25,7 +25,22 @@
         
         <!-- DM List -->
         <div class="space-y-0.5">
+          <!-- loading -->
+          <div v-if="isLoading" class="px-2 py-4 text-center text-text-muted text-sm">
+            Yükleniyor...
+          </div>
+          <!-- error -->
+          <div v-else-if="error" class="px-2 py-3 text-center text-xs text-red-400">
+            {{ error }}
+            <button class="block mx-auto mt-1 text-blurple underline" @click="fetchDMs">Tekrar dene</button>
+          </div>
+          <!-- empty -->
+          <div v-else-if="dms.length === 0" class="px-2 py-4 text-center text-text-muted text-sm">
+            Henüz direkt mesajın yok.
+          </div>
+          <!-- list -->
           <DMItem
+            v-else
             v-for="dm in dms"
             :key="dm.id"
             :dm="dm"
@@ -42,63 +57,115 @@
 </template>
 
 <script setup lang="ts">
+import { messageService } from '~/lib/api'
+
+const props = defineProps<{
+  activeDmId?: string | null
+}>()
+
 const emit = defineEmits<{
   friends: []
   'dm-select': [id: string]
 }>()
 
-const activeDmId = ref<string | null>(null)
+// -------- Tip tanımları --------
+interface DmChannel {
+  id: string
+  type: 'dm' | 'group'
+  name?: string
+  avatar?: string
+  status?: 'online' | 'idle' | 'dnd' | 'offline'
+  lastMessage?: string
+  timestamp?: Date
+  unreadCount?: number
+  recipientId?: string
+}
 
-// Statik DM listesi (sonra backend'den gelecek)
-const dms = ref([
-  {
-    id: '1',
-    type: 'dm' as const,
-    name: 'Ali Yılmaz',
-    status: 'online' as const,
-    lastMessage: 'Merhaba! Nasılsın?',
-    timestamp: new Date(Date.now() - 5 * 60 * 1000),
-    unreadCount: 2,
-  },
-  {
-    id: '2',
-    type: 'dm' as const,
-    name: 'Ayşe Kaya',
-    status: 'idle' as const,
-    lastMessage: 'Proje hazır mı?',
-    timestamp: new Date(Date.now() - 30 * 60 * 1000),
-    unreadCount: 0,
-  },
-  {
-    id: '3',
-    type: 'dm' as const,
-    name: 'Mehmet Demir',
-    status: 'dnd' as const,
-    lastMessage: 'Toplantıya katılamayacağım.',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    unreadCount: 0,
-  },
-  {
-    id: '4',
-    type: 'group' as const,
-    name: 'Proje Grubu',
-    lastMessage: 'Yeni güncelleme geldi!',
-    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    unreadCount: 5,
-  },
-  {
-    id: '5',
-    type: 'dm' as const,
-    name: 'Zeynep Arslan',
-    status: 'offline' as const,
-    lastMessage: 'Yarın görüşürüz.',
-    timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    unreadCount: 0,
-  },
-])
+const dms = ref<DmChannel[]>([])
+const isLoading = ref(false)
+const error = ref<string | null>(null)
+
+// Backend'den DM kanallarını al
+async function fetchDMs() {
+  isLoading.value = true
+  error.value = null
+  try {
+    const res = await messageService.getDMChannels()
+    if (res.success && Array.isArray(res.data)) {
+      dms.value = (res.data as any[]).map(normalizeChannel)
+    } else {
+      error.value = res.error ?? 'DM listesi alınamadı'
+    }
+  } catch (e: any) {
+    error.value = e.message ?? 'Bağlantı hatası'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+/** API'den gelen ham kanal nesnesini DMItem formatına dönüştür */
+function normalizeChannel(ch: any): DmChannel {
+  // Backend'den gelen alan adları: _id, type, recipients?, lastMessage?, ...
+  const recipients: any[] = ch.recipients ?? ch.participants ?? []
+  const other = recipients[0] // DM'de karşı taraf
+
+  return {
+    id: ch._id ?? ch.id,
+    type: ch.type === 'group' ? 'group' : 'dm',
+    name: ch.name
+      ?? other?.displayName
+      ?? other?.username
+      ?? `Kanal ${(ch._id ?? ch.id)?.slice(-4)}`,
+    avatar: ch.iconUrl ?? other?.avatarUrl ?? other?.avatar,
+    status: other?.status ?? 'offline',
+    lastMessage: ch.lastMessage?.content ?? undefined,
+    timestamp: ch.lastMessage?.createdAt
+      ? new Date(ch.lastMessage.createdAt)
+      : ch.updatedAt
+        ? new Date(ch.updatedAt)
+        : undefined,
+    unreadCount: ch.unreadCount ?? 0,
+    recipientId: other?._id ?? other?.id,
+  }
+}
+
+// WebSocket'ten gelen yeni mesajları yakala → son mesaj & sırayı güncelle
+const { on, off } = useWebSocket()
+
+function onNewMessage(data: any) {
+  const channelId = data.channelId ?? data.message?.channelId
+  if (!channelId) return
+  const idx = dms.value.findIndex(d => d.id === channelId)
+  if (idx === -1) return
+  const dm = { ...dms.value[idx] }
+  dm.lastMessage = data.message?.content ?? dm.lastMessage
+  dm.timestamp = new Date(data.message?.createdAt ?? Date.now())
+  // Aktif kanal değilse unread artır
+  if (props.activeDmId !== channelId) {
+    dm.unreadCount = (dm.unreadCount ?? 0) + 1
+  }
+  // Listenin başına taşı
+  dms.value.splice(idx, 1)
+  dms.value.unshift(dm)
+}
+
+onMounted(() => {
+  fetchDMs()
+  on('message.create', onNewMessage)
+})
+
+onUnmounted(() => {
+  off('message.create', onNewMessage)
+})
+
+// Aktif kanal değiştiğinde unread sıfırla
+watch(() => props.activeDmId, (newId) => {
+  if (!newId) return
+  const dm = dms.value.find(d => d.id === newId)
+  if (dm) dm.unreadCount = 0
+})
 
 function handleDmSelect(id: string) {
-  activeDmId.value = id
   emit('dm-select', id)
 }
 </script>

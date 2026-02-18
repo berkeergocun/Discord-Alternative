@@ -29,6 +29,19 @@ export const useAuth = () => {
       return
     }
 
+    // Önce localStorage cache'den yükle (sayfa yenileme hızlı)
+    const cachedUser = localStorage.getItem('discord_user')
+    if (cachedUser) {
+      try {
+        user.value = JSON.parse(cachedUser)
+        isLoading.value = false
+        return
+      } catch {
+        // JSON parse hatası, cache bozuk - API'dan çek
+        localStorage.removeItem('discord_user')
+      }
+    }
+
     isLoading.value = true
 
     try {
@@ -36,6 +49,7 @@ export const useAuth = () => {
       
       if (response.success && response.data) {
         user.value = response.data
+        localStorage.setItem('discord_user', JSON.stringify(response.data))
       } else {
         // Invalid token, clear auth
         clearAuth()

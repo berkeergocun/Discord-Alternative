@@ -105,3 +105,13 @@ const DMChannelRecipientSchema = new Schema<IDMChannelRecipient>(
 DMChannelRecipientSchema.index({ channelId: 1, userId: 1 }, { unique: true });
 DMChannelRecipientSchema.index({ userId: 1, channelId: 1 });
 export const DMChannelRecipient = mongoose.model<IDMChannelRecipient>('DMChannelRecipient', DMChannelRecipientSchema);
+
+// Auth service'in 'users' koleksiyonundan username okumak için salt okunur model
+const AuthUserSchema = new Schema(
+  {
+    username: String,
+    email: String,
+  },
+  { collection: 'users' }
+);
+export const AuthUser = mongoose.model('AuthUser', AuthUserSchema);

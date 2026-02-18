@@ -82,3 +82,10 @@ const UserBlockSchema = new Schema<IUserBlock>(
 UserBlockSchema.index({ userId: 1, blockedUserId: 1 }, { unique: true });
 
 export const UserBlock = mongoose.model<IUserBlock>('UserBlock', UserBlockSchema);
+
+// Auth service'in 'users' koleksiyonundan okumak için (aynı MongoDB)
+const AuthUserSchema = new Schema(
+  { username: String, email: String },
+  { collection: 'users' }
+);
+export const AuthUser = mongoose.model('AuthUser', AuthUserSchema);

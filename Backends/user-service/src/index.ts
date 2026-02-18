@@ -4,7 +4,13 @@ import { swagger } from '@elysiajs/swagger';
 import { bearer } from '@elysiajs/bearer';
 import mongoose from 'mongoose';
 import Redis from 'ioredis';
-import { UserProfile, Friendship, UserBlock } from './models';
+import { UserProfile, Friendship, UserBlock, AuthUser } from './models';
+
+// Token format: access_<userId>_<timestamp>
+function extractUserId(bearer: string): string | null {
+  const match = bearer?.match(/^access_(.+)_\d+$/);
+  return match ? match[1] : null;
+}
 
 const PORT = parseInt(process.env.USER_SERVICE_PORT || '3002');
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://admin:discord_admin_pass@localhost:27017/discord?authSource=admin';
@@ -49,36 +55,27 @@ const app = new Elysia()
     }
     
     try {
-      // Extract userId from token (format: access_<userId>_<timestamp>)
-      const tokenParts = bearer.split('_');
-      if (tokenParts.length >= 2) {
-        const userId = tokenParts[1];
-        
-        // Get user from auth database (mock for now)
-        // In production, this should call auth service or decode JWT
-        return {
-          success: true,
-          data: {
-            id: userId,
-            email: 'user@example.com', // Mock data
-            username: 'testuser999', // Mock data
-            emailVerified: false,
-            twoFactorEnabled: false,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }
-        };
-      }
-      
-      return { 
-        success: false,
-        error: 'Invalid token format' 
+      const userId = extractUserId(bearer);
+      if (!userId) return { success: false, error: 'Invalid token format' };
+
+      // Auth service ile aynı MongoDB — users koleksiyonundan gerçek kullanıcı bilgisi
+      const authUser = await AuthUser.findById(userId).lean();
+      if (!authUser) return { success: false, error: 'User not found' };
+
+      return {
+        success: true,
+        data: {
+          id: userId,
+          email: (authUser as any).email ?? '',
+          username: (authUser as any).username ?? '',
+          emailVerified: (authUser as any).emailVerified ?? false,
+          twoFactorEnabled: (authUser as any).twoFactorEnabled ?? false,
+          createdAt: (authUser as any).createdAt?.toISOString() ?? new Date().toISOString(),
+          updatedAt: (authUser as any).updatedAt?.toISOString() ?? new Date().toISOString(),
+        },
       };
     } catch (error) {
-      return { 
-        success: false,
-        error: 'Failed to get user profile' 
-      };
+      return { success: false, error: 'Failed to get user profile' };
     }
   }, { detail: { tags: ['users'] } })
   
@@ -91,7 +88,8 @@ const app = new Elysia()
   // Update own profile
   .patch('/users/@me', async ({ body, bearer }) => {
     if (!bearer) return { error: 'Unauthorized' };
-    const userId = 'extracted_from_token'; // TODO: Extract from JWT
+    const userId = extractUserId(bearer);
+    if (!userId) return { error: 'Invalid token' };
     const profile = await UserProfile.findOneAndUpdate(
       { userId: new mongoose.Types.ObjectId(userId) },
       body,
@@ -112,26 +110,95 @@ const app = new Elysia()
   // Get friends
   .get('/users/@me/friends', async ({ bearer }) => {
     if (!bearer) return { error: 'Unauthorized' };
-    const userId = 'extracted_from_token';
+    const userId = extractUserId(bearer);
+    if (!userId) return { error: 'Invalid token' };
+
+    // Her iki yönden arkadaşları getir (gönderen de alıcı da)
     const friends = await Friendship.find({
-      userId: new mongoose.Types.ObjectId(userId),
-      status: 'accepted',
-    }).populate('friendId');
-    return friends;
+      $or: [
+        { userId: new mongoose.Types.ObjectId(userId), status: 'accepted' },
+        { friendId: new mongoose.Types.ObjectId(userId), status: 'accepted' },
+      ],
+    }).lean();
+
+    // Diğer tarafın kullanıcı adını AuthUser'dan çek
+    const enriched = await Promise.all(friends.map(async (f: any) => {
+      const otherUserId = f.userId.toString() === userId ? f.friendId : f.userId;
+      const authUser = await AuthUser.findById(otherUserId).lean();
+      return {
+        ...f,
+        friendId: otherUserId,
+        username: (authUser as any)?.username ?? '',
+        displayName: (authUser as any)?.username ?? '',
+      };
+    }));
+
+    return { success: true, data: enriched };
+  }, { detail: { tags: ['friends'] } })
+
+  // Get pending friend requests
+  .get('/users/@me/friend-requests', async ({ bearer }) => {
+    if (!bearer) return { error: 'Unauthorized' };
+    const userId = extractUserId(bearer);
+    if (!userId) return { error: 'Invalid token' };
+    const requests = await Friendship.find({
+      $or: [
+        { userId: new mongoose.Types.ObjectId(userId), status: 'pending' },
+        { friendId: new mongoose.Types.ObjectId(userId), status: 'pending' },
+      ],
+    }).lean();
+    const enriched = await Promise.all(requests.map(async (r: any) => {
+      const isIncoming = r.friendId.toString() === userId;
+      const otherUserId = isIncoming ? r.userId : r.friendId;
+      const authUser = await AuthUser.findById(otherUserId).lean();
+      return {
+        ...r,
+        direction: isIncoming ? 'incoming' : 'outgoing',
+        username: (authUser as any)?.username ?? '',
+      };
+    }));
+    return { success: true, data: enriched };
   }, { detail: { tags: ['friends'] } })
   
-  // Send friend request
-  .post('/users/:userId/friend-request', async ({ params: { userId }, bearer }) => {
+  // Arkadaş isteği gönder (username veya email ile)
+  .post('/users/friend-request', async ({ body, bearer }) => {
     if (!bearer) return { error: 'Unauthorized' };
-    const currentUserId = 'extracted_from_token';
+    const currentUserId = extractUserId(bearer);
+    if (!currentUserId) return { error: 'Invalid token' };
+
+    const identifier = (body as any).identifier?.trim();
+    if (!identifier) return { error: 'identifier gerekli' };
+
+    // Username veya email ile hedef kullanıcıyı bul
+    const targetUser = await AuthUser.findOne({
+      $or: [{ username: identifier }, { email: identifier }],
+    }).lean();
+
+    if (!targetUser) return { success: false, error: `"${identifier}" adlı kullanıcı bulunamadı.` };
+
+    const targetId = (targetUser as any)._id.toString();
+    if (targetId === currentUserId) return { success: false, error: 'Kendinize arkadaşlık isteği gönderemezsiniz.' };
+
+    // Zaten arkadaş mı / bekleyen istek var mı?
+    const existing = await Friendship.findOne({
+      $or: [
+        { userId: new mongoose.Types.ObjectId(currentUserId), friendId: new mongoose.Types.ObjectId(targetId) },
+        { userId: new mongoose.Types.ObjectId(targetId), friendId: new mongoose.Types.ObjectId(currentUserId) },
+      ],
+    }).lean();
+    if (existing) return { success: false, error: 'Bu kullanıcıyla zaten arkadaş isteğiniz var.' };
+
     const friendship = await Friendship.create({
       userId: new mongoose.Types.ObjectId(currentUserId),
-      friendId: new mongoose.Types.ObjectId(userId),
+      friendId: new mongoose.Types.ObjectId(targetId),
       status: 'pending',
     });
-    return friendship;
-  }, { detail: { tags: ['friends'] } })
-  
+    return { success: true, data: friendship };
+  }, {
+    body: t.Object({ identifier: t.String() }),
+    detail: { tags: ['friends'] },
+  })
+
   // Accept friend request
   .put('/users/@me/friend-requests/:requestId', async ({ params: { requestId }, bearer }) => {
     if (!bearer) return { error: 'Unauthorized' };
@@ -146,7 +213,8 @@ const app = new Elysia()
   // Remove friend
   .delete('/users/@me/friends/:userId', async ({ params: { userId }, bearer }) => {
     if (!bearer) return { error: 'Unauthorized' };
-    const currentUserId = 'extracted_from_token';
+    const currentUserId = extractUserId(bearer);
+    if (!currentUserId) return { error: 'Invalid token' };
     await Friendship.deleteOne({
       userId: new mongoose.Types.ObjectId(currentUserId),
       friendId: new mongoose.Types.ObjectId(userId),
@@ -157,7 +225,8 @@ const app = new Elysia()
   // Block user
   .post('/users/:userId/block', async ({ params: { userId }, bearer }) => {
     if (!bearer) return { error: 'Unauthorized' };
-    const currentUserId = 'extracted_from_token';
+    const currentUserId = extractUserId(bearer);
+    if (!currentUserId) return { error: 'Invalid token' };
     const block = await UserBlock.create({
       userId: new mongoose.Types.ObjectId(currentUserId),
       blockedUserId: new mongoose.Types.ObjectId(userId),
@@ -168,7 +237,8 @@ const app = new Elysia()
   // Unblock user
   .delete('/users/:userId/block', async ({ params: { userId }, bearer }) => {
     if (!bearer) return { error: 'Unauthorized' };
-    const currentUserId = 'extracted_from_token';
+    const currentUserId = extractUserId(bearer);
+    if (!currentUserId) return { error: 'Invalid token' };
     await UserBlock.deleteOne({
       userId: new mongoose.Types.ObjectId(currentUserId),
       blockedUserId: new mongoose.Types.ObjectId(userId),
@@ -179,7 +249,8 @@ const app = new Elysia()
   // Update presence
   .patch('/users/@me/presence', async ({ body, bearer }) => {
     if (!bearer) return { error: 'Unauthorized' };
-    const userId = 'extracted_from_token';
+    const userId = extractUserId(bearer);
+    if (!userId) return { error: 'Invalid token' };
     await redis.hset(`presence:${userId}`, body);
     await redis.zadd('online_users', Date.now(), userId);
     return { success: true };
