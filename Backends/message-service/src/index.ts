@@ -7,6 +7,19 @@ import Redis from 'ioredis';
 import amqp from 'amqplib';
 import { Message, MessageAttachment, MessageReaction, DMChannel, DMChannelRecipient, AuthUser } from './models';
 
+// ─── WebSocket istemci takibi (channelId → Set<ws>) ─────────────────────────
+const wsClients = new Map<string, Set<any>>()
+const wsConnData = new WeakMap<any, { userId: string | null; subscribed: Set<string> }>()
+
+function broadcastToChannel(channelId: string, event: string, data: any) {
+  const clients = wsClients.get(channelId.toString())
+  if (!clients || clients.size === 0) return
+  const payload = JSON.stringify({ event, data })
+  for (const client of clients) {
+    try { client.send(payload) } catch { /* bağlantı kapandıysa yoksay */ }
+  }
+}
+
 const PORT = parseInt(process.env.MESSAGE_SERVICE_PORT || '3004');
 await mongoose.connect(process.env.MONGODB_URI || 'mongodb://admin:discord_admin_pass@localhost:27017/discord?authSource=admin');
 console.log('✅ MongoDB connected');
@@ -61,27 +74,58 @@ const app = new Elysia()
     const before = query.before ? new mongoose.Types.ObjectId(query.before as string) : null;
     const filter: any = { channelId: new mongoose.Types.ObjectId(channelId) };
     if (before) filter._id = { $lt: before };
-    
-    return toJSONList(await Message.find(filter)
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .populate('authorId', 'username avatarUrl displayName'));
+
+    const msgs = await Message.find(filter).sort({ createdAt: -1 }).limit(limit).lean();
+
+    // populate yerine AuthUser ile manuel zenginleştirme
+    const authorIds = [...new Set(msgs.map(m => m.authorId.toString()))];
+    const authors = await AuthUser.find({ _id: { $in: authorIds } }).lean();
+    const authorMap = new Map((authors as any[]).map(a => [a._id.toString(), a]));
+
+    return msgs.map(m => {
+      const author = authorMap.get(m.authorId.toString()) as any;
+      return {
+        ...JSON.parse(JSON.stringify(m)),
+        authorId: {
+          _id: m.authorId.toString(),
+          id: m.authorId.toString(),
+          username: author?.username ?? 'Kullanıcı',
+          displayName: author?.username ?? 'Kullanıcı',
+          avatarUrl: null,
+        },
+      };
+    });
   })
   
   .post('/channels/:channelId/messages', async ({ params: { channelId }, body, bearer }) => {
     if (!bearer) return { error: 'Unauthorized' };
     const userId = extractUserId(bearer);
     if (!userId) return { error: 'Invalid token' };
-    
+
     const message = await Message.create({
       channelId: new mongoose.Types.ObjectId(channelId),
       authorId: new mongoose.Types.ObjectId(userId),
       content: body.content,
       replyToId: body.replyToId ? new mongoose.Types.ObjectId(body.replyToId) : undefined,
     });
-    
-    await publishEvent('message.create', { channelId, message: toJSON(message) });
-    return toJSON(message);
+
+    // Yazar bilgisini ekle
+    const author = await AuthUser.findById(userId).lean() as any;
+    const msgJson = {
+      ...toJSON(message),
+      authorId: {
+        _id: userId,
+        id: userId,
+        username: author?.username ?? 'Kullanıcı',
+        displayName: author?.username ?? 'Kullanıcı',
+        avatarUrl: null,
+      },
+    };
+
+    // WebSocket üzerinden anlık yayın
+    broadcastToChannel(channelId, 'message.create', { channelId, message: msgJson });
+    await publishEvent('message.create', { channelId, message: msgJson });
+    return msgJson;
   }, { body: t.Object({ content: t.String(), replyToId: t.Optional(t.String()) }) })
   
   .patch('/channels/:channelId/messages/:messageId', async ({ params: { messageId }, body, bearer }) => {
@@ -139,10 +183,12 @@ const app = new Elysia()
     if (!bearer) return { error: 'Unauthorized' };
     const userId = extractUserId(bearer);
     if (!userId) return { error: 'Invalid token' };
-    
+
     await redis.setex(`typing:${channelId}:${userId}`, 10, '1');
+    // WebSocket üzerinden typing yayını
+    broadcastToChannel(channelId, 'typing.start', { channelId, userId });
     await publishEvent('typing.start', { channelId, userId });
-    
+
     return { success: true };
   })
   
@@ -232,7 +278,53 @@ const app = new Elysia()
       content: { $regex: searchQuery, $options: 'i' }
     }).limit(25));
   })
-  
+
+  // ─── WebSocket Gateway (gerçek zamanlı mesaj/typing) ────────────────────────
+  .ws('/ws', {
+    open(ws: any) {
+      wsConnData.set(ws, { userId: null, subscribed: new Set() })
+      ws.send(JSON.stringify({ op: 'HELLO' }))
+    },
+    message(ws: any, rawMsg: any) {
+      let msg: any
+      try {
+        msg = typeof rawMsg === 'string' ? JSON.parse(rawMsg) : rawMsg
+      } catch { return }
+
+      const connData = wsConnData.get(ws)
+      if (!connData) return
+
+      if (msg.op === 'IDENTIFY') {
+        connData.userId = extractUserId(msg.data?.token ?? '')
+        ws.send(JSON.stringify({ op: 'READY', data: { userId: connData.userId } }))
+      } else if (msg.op === 'SUBSCRIBE') {
+        const channelId: string = msg.data?.channelId
+        if (channelId) {
+          if (!wsClients.has(channelId)) wsClients.set(channelId, new Set())
+          wsClients.get(channelId)!.add(ws)
+          connData.subscribed.add(channelId)
+        }
+      } else if (msg.op === 'UNSUBSCRIBE') {
+        const channelId: string = msg.data?.channelId
+        if (channelId) {
+          wsClients.get(channelId)?.delete(ws)
+          connData.subscribed.delete(channelId)
+        }
+      } else if (msg.op === 'HEARTBEAT') {
+        ws.send(JSON.stringify({ op: 'HEARTBEAT_ACK' }))
+      }
+    },
+    close(ws: any) {
+      const connData = wsConnData.get(ws)
+      if (connData) {
+        for (const channelId of connData.subscribed) {
+          wsClients.get(channelId)?.delete(ws)
+        }
+        wsConnData.delete(ws)
+      }
+    },
+  })
+
   .listen(PORT);
 
 console.log(`🦊 Message Service running at http://${app.server?.hostname}:${app.server?.port}`);

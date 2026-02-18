@@ -14,16 +14,16 @@
     </div>
     
     <!-- Message Content -->
-    <div class="flex items-start gap-2">
-      <!-- Timestamp for grouped messages -->
+    <div class="relative">
+      <!-- Timestamp for grouped messages — absolute, flow'u bozmaz -->
       <span 
         v-if="showTimestamp"
-        class="text-xs text-text-muted opacity-0 group-hover/message:opacity-100 transition-opacity w-12 text-right shrink-0"
+        class="text-xs text-text-muted opacity-0 group-hover/message:opacity-100 transition-opacity absolute -left-14 top-0 w-12 text-right leading-5 shrink-0 select-none"
       >
         {{ message.timestamp.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) }}
       </span>
       
-      <div class="flex-1 min-w-0">
+      <div class="min-w-0">
         <!-- Text Content -->
         <div class="text-sm text-text-primary break-words whitespace-pre-wrap">
           {{ message.content }}

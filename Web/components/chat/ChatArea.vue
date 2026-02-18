@@ -148,14 +148,17 @@ async function handleSend(content: string) {
     return
   }
   const tempId = `temp-${Date.now()}`
+  const currentReply = replyTo.value   // reply bilgisini önce yakala
+  replyTo.value = null                  // sonra sıfırla
+
   // Optimistik güncelleme
   messages.value.push({
     id: tempId,
     content,
     timestamp: new Date(),
     edited: false,
-    replyTo: replyTo.value
-      ? { author: replyTo.value.author.username, content: replyTo.value.content }
+    replyTo: currentReply
+      ? { author: currentReply.author.username, content: currentReply.content }
       : undefined,
     author: {
       id: user.value?.id ?? 'me',
@@ -164,13 +167,12 @@ async function handleSend(content: string) {
       avatar: user.value?.avatar,
     },
   })
-  replyTo.value = null
   nextTick(scrollToBottom)
 
   const res = await messageService.sendMessage(
     props.channelId,
     content,
-    replyTo.value?.id,
+    currentReply?.id,  // doğru replyToId
   )
   if (res.success && res.data) {
     // temp mesajı gerçek mesajla değiştir
@@ -201,7 +203,7 @@ function handleTyping() {
 }
 
 // ─── WebSocket: gerçek zamanlı mesajlar & typing ─────────────────────────────
-const { on, off } = useWebSocket()
+const { on, off, subscribeChannel, unsubscribeChannel, isIdentified } = useWebSocket()
 
 function onMessageCreate(data: any) {
   if (data.channelId !== props.channelId) return
@@ -213,7 +215,10 @@ function onMessageCreate(data: any) {
   if (tempIdx !== -1) {
     messages.value[tempIdx] = msg
   } else {
-    messages.value.push(msg)
+    // Zaten eklenmemişse ekle (duplikat önle)
+    if (!messages.value.find(m => m.id === msg.id)) {
+      messages.value.push(msg)
+    }
   }
   nextTick(scrollToBottom)
 }
@@ -235,19 +240,31 @@ onMounted(() => {
   fetchMessages()
   on('message.create', onMessageCreate)
   on('typing.start', onTypingStart)
+  // WebSocket zaten bağlıysa direkt abone ol
+  if (props.channelId) subscribeChannel(props.channelId)
 })
 
 onUnmounted(() => {
   off('message.create', onMessageCreate)
   off('typing.start', onTypingStart)
   if (typingTimeout) clearTimeout(typingTimeout)
+  if (props.channelId) unsubscribeChannel(props.channelId)
 })
 
-// Kanal değiştiğinde mesajları yeniden yükle
-watch(() => props.channelId, (newId) => {
+// WS READY geldiğinde (yeniden bağlantı dahil) mevcut kanala abone ol
+watch(isIdentified, (identified) => {
+  if (identified && props.channelId) {
+    subscribeChannel(props.channelId)
+  }
+})
+
+// Kanal değiştiğinde mesajları yeniden yükle ve aboneliği güncelle
+watch(() => props.channelId, (newId, oldId) => {
+  if (oldId) unsubscribeChannel(oldId)
   if (newId) {
     messages.value = []
     fetchMessages()
+    subscribeChannel(newId)
   }
 })
 </script>

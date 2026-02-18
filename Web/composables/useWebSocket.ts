@@ -39,6 +39,8 @@ export const useWebSocket = () => {
         if (op === 'READY') {
           isIdentified.value = true
           dispatch('ready', msg.data)
+        } else if (op === 'HELLO') {
+          // Bağlantı kuruldu, IDENTIFY zaten onopen'de gönderildi
         } else if (op === 'HEARTBEAT_ACK') {
           // pong
         } else if (evtName) {
@@ -92,5 +94,31 @@ export const useWebSocket = () => {
     socket.value?.send(JSON.stringify({ op: 'GUILD_SUBSCRIBE', data: { guildId } }))
   }
 
-  return { connect, disconnect, on, off, subscribeGuild, isConnected, isIdentified }
+  /** Belirtilen kanal için gerçek zamanlı olayları abone ol */
+  function subscribeChannel(channelId: string) {
+    if (!channelId) return
+    if (socket.value?.readyState === WebSocket.OPEN) {
+      socket.value.send(JSON.stringify({ op: 'SUBSCRIBE', data: { channelId } }))
+    }
+  }
+
+  /** Belirtilen kanalın aboneliğini iptal et */
+  function unsubscribeChannel(channelId: string) {
+    if (!channelId) return
+    if (socket.value?.readyState === WebSocket.OPEN) {
+      socket.value.send(JSON.stringify({ op: 'UNSUBSCRIBE', data: { channelId } }))
+    }
+  }
+
+  return {
+    connect,
+    disconnect,
+    on,
+    off,
+    subscribeGuild,
+    subscribeChannel,
+    unsubscribeChannel,
+    isConnected,
+    isIdentified,
+  }
 }

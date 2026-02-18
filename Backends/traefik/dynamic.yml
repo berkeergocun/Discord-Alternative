@@ -67,6 +67,14 @@ http:
       middlewares:
         - strip-api-v1-prefix
 
+    # WebSocket doğrudan (message-service içinde /ws endpoint)
+    websocket-direct:
+      rule: "Host(`localhost`) && PathPrefix(`/ws`)"
+      service: message-service
+      entryPoints:
+        - web
+      priority: 50
+
     # SFU Service (API v1)
     sfu-service:
       rule: "Host(`localhost`) && PathPrefix(`/api/v1/sfu`)"
