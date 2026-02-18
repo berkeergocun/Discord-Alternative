@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 flex flex-col-reverse">
+  <div class="p-4 flex flex-col">
     <div v-if="isLoading" class="flex justify-center py-4">
       <div class="animate-spin w-8 h-8 border-4 border-blurple border-t-transparent rounded-full" />
     </div>
