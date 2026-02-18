@@ -41,11 +41,12 @@
           <!-- list -->
           <DMItem
             v-else
-            v-for="dm in dms"
+            v-for="dm in visibleDms"
             :key="dm.id"
             :dm="dm"
             :isActive="activeDmId === dm.id"
             @click="handleDmSelect(dm.id)"
+            @close="hideDm(dm.id)"
           />
         </div>
       </div>
@@ -84,6 +85,23 @@ interface DmChannel {
 const dms = ref<DmChannel[]>([])
 const isLoading = ref(false)
 const error = ref<string | null>(null)
+
+// ─── Gizlenen DM ID'leri (localStorage'da kalıcı) ─────────────────────────
+const HIDDEN_KEY = 'discord_hidden_dms'
+const hiddenIds = ref<Set<string>>(
+  new Set(JSON.parse(typeof window !== 'undefined' ? (localStorage.getItem(HIDDEN_KEY) ?? '[]') : '[]'))
+)
+
+const visibleDms = computed(() => dms.value.filter(d => !hiddenIds.value.has(d.id)))
+
+function hideDm(id: string) {
+  hiddenIds.value = new Set([...hiddenIds.value, id])
+  localStorage.setItem(HIDDEN_KEY, JSON.stringify([...hiddenIds.value]))
+  // Aktif kanal gizleniyorsa /channels/@me ana sayfasına yönlendir
+  if (props.activeDmId === id) {
+    navigateTo('/channels/@me')
+  }
+}
 
 // Backend'den DM kanallarını al
 async function fetchDMs() {
@@ -137,6 +155,13 @@ function onNewMessage(data: any) {
   if (!channelId) return
   const idx = dms.value.findIndex(d => d.id === channelId)
   if (idx === -1) return
+
+  // Gizliyse yeniden göster
+  if (hiddenIds.value.has(channelId)) {
+    hiddenIds.value = new Set([...hiddenIds.value].filter(id => id !== channelId))
+    localStorage.setItem(HIDDEN_KEY, JSON.stringify([...hiddenIds.value]))
+  }
+
   const dm = { ...dms.value[idx] }
   dm.lastMessage = data.message?.content ?? dm.lastMessage
   dm.timestamp = new Date(data.message?.createdAt ?? Date.now())

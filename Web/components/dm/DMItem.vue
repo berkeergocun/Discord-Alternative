@@ -1,7 +1,7 @@
 <template>
   <div
     :class="cn(
-      'flex items-center gap-3 px-2 py-1.5 mx-1 rounded cursor-pointer transition-colors',
+      'group/dmitem relative flex items-center gap-3 px-2 py-1.5 mx-1 rounded cursor-pointer transition-colors',
       isActive ? 'bg-bg-tertiary/60 text-text-primary' : 'hover:bg-bg-tertiary/40 text-text-secondary'
     )"
     @click="emit('click')"
@@ -45,15 +45,30 @@
       </p>
     </div>
     
-    <!-- Unread Badge -->
-    <Badge 
-      v-if="dm.unreadCount && dm.unreadCount > 0"
-      variant="notification"
-      size="sm"
-      class="shrink-0"
-    >
-      {{ dm.unreadCount > 99 ? '99+' : dm.unreadCount }}
-    </Badge>
+    <!-- Unread Badge ya da Kapat butonu -->
+    <div class="shrink-0 flex items-center justify-center w-5 h-5">
+      <!-- Unread sayısı (kapat butonu yokken) -->
+      <Badge
+        v-if="dm.unreadCount && dm.unreadCount > 0"
+        variant="notification"
+        size="sm"
+        class="group-hover/dmitem:hidden"
+      >
+        {{ dm.unreadCount > 99 ? '99+' : dm.unreadCount }}
+      </Badge>
+
+      <!-- Kapat (X) butonu — hover'da görünür -->
+      <button
+        class="hidden group-hover/dmitem:flex items-center justify-center w-4 h-4 rounded-sm text-text-muted hover:text-text-primary hover:bg-bg-secondary transition-colors"
+        title="Kapat"
+        @click.stop="emit('close')"
+      >
+        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -78,6 +93,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   click: []
+  close: []
 }>()
 
 const displayName = computed(() => props.dm.name || 'Bilinmeyen Kullanıcı')
