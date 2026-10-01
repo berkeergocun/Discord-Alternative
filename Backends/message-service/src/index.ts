@@ -5,7 +5,36 @@ import { bearer } from '@elysiajs/bearer';
 import mongoose from 'mongoose';
 import Redis from 'ioredis';
 import amqp from 'amqplib';
+import * as Minio from 'minio';
 import { Message, MessageAttachment, MessageReaction, DMChannel, DMChannelRecipient, AuthUser } from './models';
+
+// ─── MinIO client ────────────────────────────────────────────────────────────
+const MINIO_ENDPOINT = process.env.MINIO_ENDPOINT || 'localhost';
+const MINIO_PORT    = parseInt(process.env.MINIO_PORT   || '9000');
+const MINIO_ACCESS  = process.env.MINIO_ACCESS_KEY || 'discord_minio_user';
+const MINIO_SECRET  = process.env.MINIO_SECRET_KEY || 'discord_minio_pass';
+const MINIO_BUCKET  = 'discord-attachments';
+
+const minioClient = new Minio.Client({
+  endPoint:        MINIO_ENDPOINT,
+  port:            MINIO_PORT,
+  useSSL:          false,
+  accessKey:       MINIO_ACCESS,
+  secretKey:       MINIO_SECRET,
+});
+
+// Bucket yoksa oluştur
+try {
+  const exists = await minioClient.bucketExists(MINIO_BUCKET);
+  if (!exists) {
+    await minioClient.makeBucket(MINIO_BUCKET, 'us-east-1');
+    console.log(`✅ MinIO bucket '${MINIO_BUCKET}' oluşturuldu`);
+  } else {
+    console.log(`✅ MinIO bağlandı (bucket: ${MINIO_BUCKET})`);
+  }
+} catch (err) {
+  console.error('⚠️ MinIO bağlantı hatası:', err);
+}
 
 // ─── WebSocket istemci takibi (channelId → Set<ws>) ─────────────────────────
 const wsClients = new Map<string, Set<any>>()
@@ -190,6 +219,78 @@ const app = new Elysia()
     await publishEvent('typing.start', { channelId, userId });
 
     return { success: true };
+  })
+
+  // ─── Dosya eki yükleme (multipart, max 10 MB) ────────────────────────────
+  .post('/channels/:channelId/attachments', async ({ params: { channelId }, request, bearer }) => {
+    if (!bearer) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    const userId = extractUserId(bearer);
+    if (!userId) return new Response(JSON.stringify({ error: 'Invalid token' }), { status: 401 });
+
+    const contentType = request.headers.get('content-type') ?? '';
+    if (!contentType.includes('multipart/form-data')) {
+      return new Response(JSON.stringify({ error: 'multipart/form-data gerekli' }), { status: 400 });
+    }
+
+    const formData = await request.formData();
+    const file = formData.get('file') as File | null;
+    const content = (formData.get('content') as string | null) ?? '';
+
+    if (!file) return new Response(JSON.stringify({ error: 'Dosya bulunamadı' }), { status: 400 });
+
+    const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+    if (file.size > MAX_SIZE) {
+      return new Response(JSON.stringify({ error: 'Dosya boyutu 10 MB\'ı geçemez' }), { status: 413 });
+    }
+
+    // MinIO'ya yükle
+    const ext = file.name.split('.').pop() ?? '';
+    const objectKey = `${channelId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    try {
+      await minioClient.putObject(MINIO_BUCKET, objectKey, buffer, file.size, {
+        'Content-Type': file.type || 'application/octet-stream',
+      });
+    } catch (err: any) {
+      console.error('MinIO yükleme hatası:', err);
+      return new Response(JSON.stringify({ error: 'Dosya yüklenemedi' }), { status: 500 });
+    }
+
+    // Mesaj oluştur
+    const message = await Message.create({
+      channelId: new mongoose.Types.ObjectId(channelId),
+      authorId:  new mongoose.Types.ObjectId(userId),
+      content:   content || '',
+      type:      'default',
+    });
+
+    // Attachment kaydı
+    const attachment = await MessageAttachment.create({
+      messageId:   message._id,
+      filename:    file.name,
+      url:         objectKey,   // MinIO key; frontend /api/v1/media/{key} üzerinden okur
+      size:        file.size,
+      contentType: file.type || 'application/octet-stream',
+    });
+
+    const author = await AuthUser.findById(userId).lean() as any;
+    const msgJson = {
+      ...toJSON(message),
+      authorId: {
+        _id: userId, id: userId,
+        username: author?.username ?? 'Kullanıcı',
+        displayName: author?.username ?? 'Kullanıcı',
+        avatarUrl: null,
+      },
+      attachments: [toJSON(attachment)],
+    };
+
+    broadcastToChannel(channelId, 'message.create', { channelId, message: msgJson });
+    await publishEvent('message.create', { channelId, message: msgJson });
+    return new Response(JSON.stringify(msgJson), {
+      headers: { 'Content-Type': 'application/json' },
+    });
   })
   
   // DM Channels — /channels/dm prefix kullan (Traefik zaten /api/v1/channels → message-service)

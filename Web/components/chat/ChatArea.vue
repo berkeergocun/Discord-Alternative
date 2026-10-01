@@ -203,45 +203,45 @@ function handleTyping() {
 }
 
 // ─── WebSocket: gerçek zamanlı mesajlar & typing ─────────────────────────────
-const { on, off, subscribeChannel, unsubscribeChannel, isIdentified } = useWebSocket()
+const { on, off, subscribeChannel, unsubscribeChannel, isConnected } = useWebSocket()
 
 function onMessageCreate(data: any) {
   if (data.channelId !== props.channelId) return
   const msg = normalizeMsg(data.message)
-  // Optimistik mesajla çakışma kontrolü
+  // Optimistik mesajla çakışma kontrolü (temp-* veya aynı id)
   const tempIdx = messages.value.findIndex(
     m => m.id?.startsWith('temp-') && m.content === msg.content
   )
   if (tempIdx !== -1) {
     messages.value[tempIdx] = msg
-  } else {
-    // Zaten eklenmemişse ekle (duplikat önle)
-    if (!messages.value.find(m => m.id === msg.id)) {
-      messages.value.push(msg)
-    }
+  } else if (!messages.value.find(m => m.id === msg.id)) {
+    messages.value.push(msg)
+    nextTick(scrollToBottom)
   }
-  nextTick(scrollToBottom)
 }
 
 function onTypingStart(data: any) {
   if (data.channelId !== props.channelId) return
   const uid = data.userId as string
   if (!user.value || uid === user.value.id) return
-  if (!typingUsers.value.includes(uid)) {
-    typingUsers.value.push(uid)
-  }
+  if (!typingUsers.value.includes(uid)) typingUsers.value.push(uid)
   if (typingTimeout) clearTimeout(typingTimeout)
   typingTimeout = setTimeout(() => {
     typingUsers.value = typingUsers.value.filter(u => u !== uid)
   }, 10_000)
 }
 
+function doSubscribe() {
+  if (props.channelId && isConnected.value) {
+    subscribeChannel(props.channelId)
+  }
+}
+
 onMounted(() => {
   fetchMessages()
   on('message.create', onMessageCreate)
   on('typing.start', onTypingStart)
-  // WebSocket zaten bağlıysa direkt abone ol
-  if (props.channelId) subscribeChannel(props.channelId)
+  doSubscribe()
 })
 
 onUnmounted(() => {
@@ -251,11 +251,9 @@ onUnmounted(() => {
   if (props.channelId) unsubscribeChannel(props.channelId)
 })
 
-// WS READY geldiğinde (yeniden bağlantı dahil) mevcut kanala abone ol
-watch(isIdentified, (identified) => {
-  if (identified && props.channelId) {
-    subscribeChannel(props.channelId)
-  }
+// Bağlantı kurulunca (veya yeniden bağlanınca) subscribe gönder
+watch(isConnected, (connected) => {
+  if (connected) doSubscribe()
 })
 
 // Kanal değiştiğinde mesajları yeniden yükle ve aboneliği güncelle
@@ -264,7 +262,7 @@ watch(() => props.channelId, (newId, oldId) => {
   if (newId) {
     messages.value = []
     fetchMessages()
-    subscribeChannel(newId)
+    doSubscribe()
   }
 })
 </script>

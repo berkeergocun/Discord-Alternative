@@ -85,6 +85,28 @@ services:
       timeout: 5s
       retries: 5
 
+  # MinIO - Dosya/Medya depolama
+  minio:
+    image: minio/minio:latest
+    container_name: discord-minio
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: discord_minio_user
+      MINIO_ROOT_PASSWORD: discord_minio_pass
+    ports:
+      - "9000:9000"  # API
+      - "9001:9001"  # Console (tarayıcıdan: localhost:9001)
+    volumes:
+      - minio_data:/data
+    networks:
+      - discord-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Traefik - API Gateway
   traefik:
     image: traefik:v2.10
@@ -122,4 +144,6 @@ volumes:
   rabbitmq_data:
     driver: local
   elasticsearch_data:
+    driver: local
+  minio_data:
     driver: local
